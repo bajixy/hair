@@ -3,14 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Our 100 days.">
+<meta name="description" content="For you. Everything since the call.">
+<title>Our 100 Days</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bajinna.xyz/">
 <meta property="og:title" content="Our 100 Days">
-<meta property="og:description" content="Everything since the call.">
+<meta property="og:description" content="For you. Everything since the call.">
+<meta property="og:image" content="https://bajinna.xyz/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bajinna.xyz/og.jpg">
+<meta name="theme-color" content="#241828">
+<link rel="preload" as="image" href="photos/t/786afe66a125f8f07f0110e05d9dfebe.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%99%A1%3C/text%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>Our 100 Days</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Jost:wght@300;400;500&display=swap">
 <style>
@@ -234,6 +244,67 @@ button,input,textarea{font:inherit;color:inherit}
 .btn.danger-ghost{background:transparent;color:var(--accent);border-color:var(--accent)}
 .status{font-size:.82rem;color:var(--muted)}
 
+/* envelope opening */
+.seal-screen{position:fixed;inset:0;z-index:80;background:radial-gradient(120% 90% at 50% 20%,#3a2340 0%,#1c1220 70%);color:#f5ecf3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));text-align:center;transition:opacity 1s ease .9s,visibility 0s linear 1.9s}
+.seal-screen .eyebrow{color:#d6b98c}
+.seal-screen h2{font-family:var(--f-display);font-weight:300;font-style:italic;font-size:clamp(2.6rem,9vw,4.2rem);margin:0;line-height:1}
+.seal-screen .hint{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:#bfaecb;animation:breathe 2.6s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.45}}
+.env{position:relative;width:min(340px,78vw);aspect-ratio:1.55;perspective:900px;margin-top:56px}
+.env-back{position:absolute;inset:0;background:#efe4ec;border-radius:6px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+.env-card{position:absolute;z-index:1;left:7%;right:7%;top:8%;bottom:8%;background:#fffdfb;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#2a1f30;transition:transform 1s cubic-bezier(.3,.7,.2,1) .45s}
+.env-card b{font-family:var(--f-display);font-weight:300;font-size:clamp(1.3rem,5vw,1.7rem)}
+.env-card b em{background:linear-gradient(135deg,#d9829f,#8e4fa8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.env-card span{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#8c7f96}
+.env-front{position:absolute;inset:0;border-radius:6px;background:linear-gradient(155deg,#f6edf3,#e9dbe5);clip-path:polygon(0 0,50% 52%,100% 0,100% 100%,0 100%);z-index:2}
+.env-flap{position:absolute;left:0;right:0;top:0;height:58%;background:linear-gradient(180deg,#e7d8e3,#dcc9d7);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;z-index:3;transition:transform .8s cubic-bezier(.5,0,.3,1),z-index 0s linear .4s}
+.seal{position:absolute;left:50%;top:58%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;border:0;cursor:pointer;z-index:4;
+  background:radial-gradient(circle at 35% 30%,#e7a1bd,#a4467a 55%,#6e2a58);box-shadow:0 6px 14px rgba(70,10,50,.45),inset 0 -3px 6px rgba(0,0,0,.25);
+  color:#fbe9f2;font-family:var(--f-display);font-style:italic;font-size:1.6rem;display:flex;align-items:center;justify-content:center;transition:transform .5s,opacity .4s;animation:sealPulse 2.6s ease-in-out infinite}
+.seal::after{content:"";position:absolute;inset:7px;border-radius:50%;border:1px dashed rgba(255,230,240,.5)}
+.seal:hover{transform:scale(1.06)}
+.seal:focus-visible{outline:2px solid #f5ecf3;outline-offset:4px}
+@keyframes sealPulse{50%{box-shadow:0 6px 14px rgba(70,10,50,.45),0 0 0 10px rgba(231,161,189,.12),inset 0 -3px 6px rgba(0,0,0,.25)}}
+.seal-screen.opening .seal{opacity:0;transform:scale(.6)}
+.seal-screen.opening .env-flap{transform:rotateX(180deg);z-index:0}
+.seal-screen.opening .env-card{transform:translateY(-62%)}
+.seal-screen.opening{opacity:0;visibility:hidden;pointer-events:none}
+.seal-screen.gone{display:none}
+body.sealed{overflow:hidden}
+body.sealed .rise{animation-play-state:paused}
+body.sealed .dot{animation-play-state:paused}
+
+/* between us */
+.between{display:grid;grid-template-columns:1fr 1.3fr 1fr;align-items:center;gap:20px;max-width:900px}
+.city{text-align:center}
+.city .time{font-family:var(--f-display);font-weight:300;font-size:clamp(2.4rem,6vw,3.4rem);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.city .name{font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.city .part{font-family:var(--f-display);font-style:italic;color:var(--accent);margin-top:4px}
+.arc svg{width:100%;height:auto;display:block;overflow:visible}
+.arc .path{fill:none;stroke:var(--gold);stroke-width:1.2;stroke-dasharray:3 6}
+.arc .pin{fill:var(--accent)}
+.arc .hrt{fill:var(--accent2)}
+.between-foot{text-align:center;margin-top:26px;color:var(--muted);font-size:.9rem;letter-spacing:.02em}
+.between-foot b{font-family:var(--f-display);font-weight:400;color:var(--ink);font-size:1.15rem}
+@media (max-width:640px){.between{grid-template-columns:1fr 1fr}.arc{grid-column:1/-1;grid-row:1}}
+
+/* slideshow */
+.lb-meta{font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:#d8c9e0;text-align:center}
+.lb-meta i{font-family:var(--f-display);font-style:italic;letter-spacing:0;text-transform:none;font-size:1rem;display:block;margin-top:6px;color:#f3eaf6}
+.lb-play{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:51;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:9px 20px;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
+.lb-play:hover{color:var(--accent);border-color:var(--accent)}
+.lb-bar{position:fixed;left:0;top:0;height:2px;background:var(--grad);z-index:52;width:0}
+.lb-bar.run{animation:bar 4s linear forwards}
+@keyframes bar{to{width:100%}}
+@media (max-width:640px){.lb-play{bottom:calc(74px + env(safe-area-inset-bottom,0px))}}
+
+/* finale */
+.finale{text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px;padding-block:20px}
+.finale .big100{font-family:var(--f-display);font-style:italic;font-weight:300;font-size:clamp(6rem,22vw,11rem);line-height:.9;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.04em}
+.finale h2{font-family:var(--f-display);font-weight:300;font-size:clamp(1.8rem,5vw,2.6rem);margin:0}
+.finale p{color:var(--muted);margin:0;max-width:40ch}
+
 .note{font-size:.86rem;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:12px 16px;border-radius:10px}
 footer{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
 footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-size:1.5rem;color:var(--muted);margin:0}
@@ -250,6 +321,19 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
   html{scroll-behavior:auto}
 }
 </style>
+
+<div class="seal-screen" id="sealScreen" role="dialog" aria-label="A letter for you">
+  <div class="eyebrow">Day 100 · 1 November</div>
+  <h2>For you</h2>
+  <div class="env">
+    <div class="env-back"></div>
+    <div class="env-card"><span>Open me</span><b>Our <em>100</em> days</b></div>
+    <div class="env-front"></div>
+    <div class="env-flap"></div>
+    <button class="seal" type="button" id="sealBtn" aria-label="Open the letter">♡</button>
+  </div>
+  <div class="hint">Tap the seal</div>
+</div>
 
 <div class="ambient" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div></div>
 
@@ -320,12 +404,30 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     </div>
   </section>
 
+  <section aria-labelledby="betweenH">
+    <div class="section-head"><div><span class="num">iii.</span><h2 class="section-h" id="betweenH">Between us</h2></div></div>
+    <div class="between">
+      <div class="city"><div class="time" id="tBne">--:--</div><div class="name">Brisbane</div><div class="part" id="pBne"></div></div>
+      <div class="arc" aria-hidden="true">
+        <svg viewBox="0 0 300 120">
+          <path id="arcPath" class="path" d="M20 100 Q150 -20 280 100"/>
+          <circle class="pin" cx="20" cy="100" r="4"/><circle class="pin" cx="280" cy="100" r="4"/>
+          <g id="arcHeart"><path class="hrt" d="M0 3 C-6 -3 -10 2 -6 6 L0 11 L6 6 C10 2 6 -3 0 3Z" transform="translate(0,-6)"/>
+            <animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"><mpath href="#arcPath"/></animateMotion></g>
+        </svg>
+      </div>
+      <div class="city"><div class="time" id="tUb">--:--</div><div class="name">Ulaanbaatar</div><div class="part" id="pUb"></div></div>
+    </div>
+    <p class="between-foot"><b>9,560 km</b> and <b>2 hours</b> apart, and still calling all the time.</p>
+  </section>
+
   <section aria-labelledby="albumH" id="albumSec">
     <div class="section-head">
-      <div><span class="num">iii.</span><h2 class="section-h" id="albumH">Us, in pictures</h2></div>
+      <div><span class="num">iv.</span><h2 class="section-h" id="albumH">Us, in pictures</h2></div>
       <div class="actions">
         <span class="album-status" id="aStatus" aria-live="polite"></span>
         <button class="add" type="button" id="aAdd" hidden>Add photos</button>
+        <button class="add" type="button" id="aPlay">▶ Slideshow</button>
       </div>
     </div>
     <input type="file" id="bulk" accept="image/*" multiple hidden>
@@ -338,15 +440,26 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     <div class="page-num" id="aNum"></div>
   </section>
 
+  <section class="finale" aria-labelledby="finH">
+    <div class="eyebrow">Day 100 · 1 November 2026 · one year since the call</div>
+    <div class="big100" aria-hidden="true">100</div>
+    <h2 id="finH">To be continued…</h2>
+    <p>A hundred days in, and you still owe me a drunk call.</p>
+    <button class="add" type="button" id="again">Read it again from the start</button>
+  </section>
+
   <footer><hr class="hair"><p>here's to the next hundred</p></footer>
 </div>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo">
+  <div class="lb-bar" id="lbBar"></div>
   <button class="lb-x" type="button" id="lbX" aria-label="Close">×</button>
+  <button class="lb-play" type="button" id="lbPlay">Pause</button>
   <button class="lb-nav lb-prev" type="button" id="lbPrev" aria-label="Previous photo">←</button>
   <button class="lb-nav lb-next" type="button" id="lbNext" aria-label="Next photo">→</button>
   <div class="lb-in">
     <img id="lbImg" alt="">
+    <div class="lb-meta" id="lbMeta"></div>
     <div class="lb-panel fields" id="lbPanel">
       <div class="row">
         <label for="lbDate" class="narrow">Date<input type="date" id="lbDate"></label>
@@ -455,7 +568,7 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
       html=`<article class="leaf cover"><div class="cover-frame"></div><div class="cover-in"><div class="eyebrow">A story in ${list.length} chapter${list.length===1?"":"s"}</div><h3>How we got here</h3>${list.length?`<p>${esc(first.when||"")}${d1&&d1!==first?"  ·  "+esc(d1.when):""}  ·  today</p><button type="button" class="open" data-a="open">Open the book</button>`:`<p>Add the first chapter to begin.</p>`}</div></article>`;
     }else{
       const c=list.find(x=>x.id===curId), n=list.indexOf(c)+1, conf=sConfirm===c.id;
-      const photo=c.photo?`<img src="photos/${esc(c.photo)}.jpg" alt="${esc(c.title)}">`:(assets?`<button type="button" class="slot" data-a="photo"><span class="plus">+</span>Add a photo for this chapter</button>`:`<div class="slot static">♡</div>`);
+      const photo=c.photo?`<img src="photos/t/${esc(c.photo)}.jpg" alt="${esc(c.title)}">`:(assets?`<button type="button" class="slot" data-a="photo"><span class="plus">+</span>Add a photo for this chapter</button>`:`<div class="slot static">♡</div>`);
       html=`<article class="leaf${c.day1?" day1":""}"><div class="leaf-photo">${photo}</div><div class="leaf-text">
         <div class="when">${esc(c.when||"")}${c.day1?" · Day 1":""}</div><h3>${esc(c.title)}</h3><div class="rule"></div>${c.text?`<p>${esc(c.text)}</p>`:"<p></p>"}
         <div class="leaf-foot"><span class="cn">${n} / ${list.length}</span>${db?`<div class="tools">${conf?`<button type="button" class="danger" data-a="yes">Yes, remove</button><button type="button" data-a="no">Keep it</button>`:
@@ -535,7 +648,7 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
       html=`<article class="leaf cover"><div class="cover-frame"></div><div class="cover-in"><div class="eyebrow">${ps.length?ps.length+" photograph"+(ps.length===1?"":"s"):"Our photo album"}</div><h3>Us, in pictures</h3>${ps.length?`<p>${esc(fmt(ps[0].date))}${ps.length>1?"  –  "+esc(fmt(ps[ps.length-1].date)):""}</p><button type="button" class="open" data-al="open">Open the album</button>`:(assets?`<p>Pick a bunch of photos and they'll lay themselves out on the pages.</p><button type="button" class="open" data-al="add">Add your first photos</button>`:`<p>Photos will appear here.</p>`)}</div></article>`;
     }else{
       html=`<article class="leaf album-leaf"><div class="spread l${set.length}">${set.map(m=>{const d=dayOf(m.date);const cap=capOf(m);
-        return `<figure class="shot"><button type="button" class="shot-img" data-open="${esc(m.id)}" aria-label="Open photo${cap?": "+esc(cap):""}"><img src="photos/${esc(m.photo)}.jpg" alt="${esc(cap)}" loading="lazy"></button><figcaption><span class="sd">${d&&d>=1&&d<=100?"Day "+d:esc(fmt(m.date))}</span>${esc(cap)}</figcaption></figure>`}).join("")}</div></article>`;
+        return `<figure class="shot"><button type="button" class="shot-img" data-open="${esc(m.id)}" aria-label="Open photo${cap?": "+esc(cap):""}"><img src="photos/t/${esc(m.photo)}.jpg" alt="${esc(cap)}" loading="lazy"></button><figcaption><span class="sd">${d&&d>=1&&d<=100?"Day "+d:esc(fmt(m.date))}</span>${esc(cap)}</figcaption></figure>`}).join("")}</div></article>`;
     }
     const leaf=swapLeaf($("album"),html,dir);
     leaf.querySelectorAll("[data-al]").forEach(b=>b.onclick=()=>{if(b.dataset.al==="open")stepAlbum(1);else $("bulk").click()});
@@ -572,14 +685,15 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     const m=memories.find(x=>x.id===id); if(!m) return;
     lbId=id; lbConfirm=false;
     const img=$("lbImg"); img.classList.remove("show"); void img.offsetWidth; img.src="photos/"+m.photo+".jpg"; img.alt=capOf(m); img.classList.add("show");
+    {const d=dayOf(m.date);$("lbMeta").innerHTML=(d&&d>=1&&d<=100?"Day "+d+" · ":"")+esc(fmt(m.date))+(capOf(m)?`<i>${esc(capOf(m))}</i>`:"");}
     $("lbCap").value=capOf(m); $("lbDate").value=m.date||""; $("lbStatus").textContent="";
     $("lbPanel").hidden=!db; renderLbDel();
     const ps=photos(), i=ps.findIndex(x=>x.id===id);
     $("lbPrev").disabled=i<=0; $("lbNext").disabled=i>=ps.length-1;
     $("lbCount").textContent=`${i+1} of ${ps.length}`;
-    if($("lb").hidden){$("lb").hidden=false; document.body.style.overflow="hidden"; $("lbX").focus()}
+    if($("lb").hidden){$("lb").hidden=false; document.body.style.overflow="hidden"; $("lbX").focus(); if(!show){$("lbPlay").textContent="Play"}}
   }
-  function closeLb(){ if($("lb").hidden) return; $("lb").hidden=true; document.body.style.overflow=""; const k=pageOfPhoto(lbId); lbId=null; if(k&&k!==albumIdx) goAlbum(k); }
+  function closeLb(){ stopShow(); if($("lb").hidden) return; $("lb").hidden=true; document.body.style.overflow=""; const k=pageOfPhoto(lbId); lbId=null; if(k&&k!==albumIdx) goAlbum(k); }
   function lbStep(d){const ps=photos(), i=ps.findIndex(x=>x.id===lbId), j=i+d; if(j>=0&&j<ps.length) openLb(ps[j].id)}
   function renderLbDel(){
     const s=$("lbDel");
@@ -604,7 +718,17 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     finally{btn.disabled=false}
   };
   $("lbCap").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("lbSave").click()}});
-  $("lbX").onclick=closeLb; $("lbPrev").onclick=()=>lbStep(-1); $("lbNext").onclick=()=>lbStep(1);
+  $("lbX").onclick=closeLb; $("lbPrev").onclick=()=>{stopShow();lbStep(-1)}; $("lbNext").onclick=()=>{stopShow();lbStep(1)};
+  // slideshow
+  let show=null;
+  function tickBar(){const b=$("lbBar");b.classList.remove("run");void b.offsetWidth;b.classList.add("run")}
+  function startShow(){const ps=photos(); if(!ps.length) return;
+    if($("lb").hidden){const pg=albumPages();const first=(albumIdx&&pg[albumIdx-1])?pg[albumIdx-1][0]:ps[0];openLb(first.id)}
+    clearInterval(show); show=setInterval(()=>{const ps=photos(),i=ps.findIndex(x=>x.id===lbId);openLb(ps[(i+1)%ps.length].id);tickBar()},4000);
+    $("lbPlay").textContent="Pause"; $("lbPlay").hidden=false; tickBar()}
+  function stopShow(){ if(show){clearInterval(show);show=null} $("lbPlay").textContent="Play"; $("lbBar").classList.remove("run") }
+  $("lbPlay").onclick=()=>{ show?stopShow():startShow() };
+  $("aPlay").onclick=startShow;
   $("lb").addEventListener("click",e=>{if(e.target===$("lb"))closeLb()});
 
   // ---------- input ----------
@@ -617,7 +741,7 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     if(!$("lb").hidden){
       if(e.key==="Escape"){closeLb();return}
       const t=e.target; if(t&&t.closest&&t.closest("input,textarea"))return;
-      if(e.key==="ArrowRight")lbStep(1); else if(e.key==="ArrowLeft")lbStep(-1);
+      if(e.key==="ArrowRight"){stopShow();lbStep(1)} else if(e.key==="ArrowLeft"){stopShow();lbStep(-1)} else if(e.key===" "){e.preventDefault();show?stopShow():startShow()}
       return;
     }
     const t=e.target;if(t&&t.closest&&t.closest("input,textarea,[contenteditable='true']"))return;
@@ -643,7 +767,32 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
 
   const DATA={"info": {"startDate": "2026-07-25", "names": ""}, "story": [{"order": 100, "photo": "1a662dd179db4537ffad20280f0883c4", "text": "Shortly after, sadly, I had to go back to Australia.", "title": "Back to Australia", "when": "Shortly after", "id": "ch-back-to-aus"}, {"order": 10, "photo": "786afe66a125f8f07f0110e05d9dfebe", "text": "The very first thing. She drunk called me, and she was so embarrassed about it. I told her, \"You owe me a drunk call.\" That's how it all started.", "title": "The drunk call", "when": "1 Nov 2025", "id": "ch-first-call"}, {"order": 60, "photo": "c00b6fa4d997cb28859db4ebbfc10bab", "text": "Then we went on a proper date. Dinner at World Wine, then Bitsy, then Broski, then Fat Cat. We grabbed snacks from a convenience store on the way and spent the night at our place.", "title": "Our first date", "when": "Summer 2026", "id": "ch-first-date"}, {"order": 30, "photo": "9940af01768bbc713c160c967dd91d0a", "text": "I came to Mongolia and we finally hung out. We first met in front of the Vault, Mongol Bank. She was wearing a white fur-ish top, blue jeans and a white net top.", "title": "Meeting in Mongolia", "when": "26 Jun 2026", "id": "ch-first-meet"}, {"order": 70, "photo": "d24ac62eeb4a849b19b6572b1db0ed01", "text": "After that we hung out even more, and she met all my friends.", "title": "Meeting the friends", "when": "Summer 2026", "id": "ch-friends"}, {"order": 40, "photo": "d486ec9f3169a298aff9e29ada29b74e", "text": "After that we started hanging out often. She would come over and we'd just hang out.", "title": "Hanging out all the time", "when": "Summer 2026", "id": "ch-hanging-out"}, {"order": 110, "photo": "9aac61c5c0b4706cd5f23a37f6e4034d", "text": "We've been doing long distance. Phone calls all the time, me sending her dinner and flowers, and watching cute movies together.", "title": "Long distance, still us", "when": "Aug – Oct 2026", "id": "ch-long-distance"}, {"order": 20, "photo": "8a5411e3940c2ffe81c37db952cabdb6", "text": "I called her first this time. After that we started texting here and there.", "title": "My turn to call", "when": "4 Mar 2026", "id": "ch-my-call"}, {"day1": true, "order": 90, "photo": "cd700a89d67deeca6607855ff8928ba9", "text": "We started officially dating. Day 1.", "title": "Officially us", "when": "25 Jul 2026", "id": "ch-official"}, {"order": 50, "photo": "b5b415e68e7abba07fe1b71b389213ff", "text": "Then we spent 7 days together, every single day. It was so funny and super fun.", "title": "Seven days straight", "when": "Summer 2026", "id": "ch-seven-days"}, {"order": 80, "photo": "35a5354360fe17c56263aa7686a76914", "text": "I invited her to come to Terelj National Park to meet my parents and hang out together. It was super fun.", "title": "Terelj and the parents", "when": "Summer 2026", "id": "ch-terelj"}], "memories": [{"caption": "", "createdAt": 1793451458910, "date": "2026-07-23", "photo": "49645a4424673ae73a5f53eb64023467", "id": "1rcyhn7i5u49z71po2of"}, {"caption": "", "createdAt": 1793451575239, "date": "2026-09-23", "photo": "9dd3f28be1b9fe1f93acba04a20d14b3", "id": "2p1nu3iwl2u9pghskpoz"}, {"caption": "", "createdAt": 1793451460402, "date": "2026-07-22", "photo": "ab57b7ed878efd14fa5486fc4fb13d9c", "id": "30a2tu9ddcmim038zqgm"}, {"caption": "", "createdAt": 1793451440193, "date": "2026-09-22", "photo": "baf6a91ca30bf74f083c577470cadc93", "id": "356geda7al9vxt7r8nzf"}, {"caption": "", "createdAt": 1793451454272, "date": "2026-07-24", "photo": "98e9062e763856df5d2a5e8fd65ad02b", "id": "3xl04vhguzauvfpyyx7d"}, {"caption": "", "createdAt": 1793451464269, "date": "2026-07-20", "photo": "2f8b5e5c26a2a0d5174e4fab83bd481b", "id": "46j4p96gie372ftldo3b"}, {"caption": "", "createdAt": 1793451594365, "date": "2026-08-25", "photo": "7f2d7e511c2d2a193aa99e762ce585b2", "id": "4n3qakvf8oevdoaitn0x"}, {"caption": "", "createdAt": 1793451577173, "date": "2026-09-21", "photo": "0511688cbfe32384c3aa8f7807f2d864", "id": "5lsbxq3i9mzo5wjsdyhu"}, {"caption": "", "createdAt": 1793451468326, "date": "2026-07-17", "photo": "108008b62b37a2b73880812229a37245", "id": "6k3z4wztfa63lgtpherx"}, {"caption": "", "createdAt": 1793451452453, "date": "2026-07-24", "photo": "c645c4d00821c394923426642aeadb94", "id": "am211g6ply1le2x73no0"}, {"caption": "", "createdAt": 1793451583882, "date": "2026-09-10", "photo": "2a7cfe599d479621972bc6d30577c47a", "id": "dlkmicvs0guheu4y6t55"}, {"caption": "", "createdAt": 1793451466818, "date": "2026-07-16", "photo": "ad4b2a5888e0bbb510357b4964d6dccf", "id": "f8awlq191775f33axx9h"}, {"caption": "", "createdAt": 1793451448888, "date": "2026-07-26", "photo": "f1ca05548c04fc822cd00cb498436fe0", "id": "fcpt817kugfwa3cqzeh8"}, {"caption": "", "createdAt": 1793451446697, "date": "2026-07-28", "photo": "2c023c80c5461f45a06e4191a3d49f3f", "id": "fp4mo69imxle14ag09eo"}, {"caption": "", "createdAt": 1793451469620, "date": "2026-07-17", "photo": "29ae09e9b384824c40a7036818d62dc6", "id": "gwbp5xa3mi05i5rwobxp"}, {"caption": "", "createdAt": 1793451438003, "date": "2026-09-23", "photo": "204e1e17f1b8ae3f33090a28f54e7514", "id": "hfred1svrig2et4mciw4"}, {"caption": "", "createdAt": 1793451582406, "date": "2026-09-15", "photo": "522677cd1dccbed3a2360eba64a84537", "id": "himj20wqfmlw6id0k2jf"}, {"caption": "", "createdAt": 1793451474731, "date": "2026-07-03", "photo": "3378d52765b8ec89cd1488636b42764f", "id": "kgl2qla6402o9dlqkx70"}, {"caption": "", "createdAt": 1793451579212, "date": "2026-09-21", "photo": "18e235c93f0bdc4e5d6de4f7236fe606", "id": "kzxrqa1xkgvwy3kqwfa4"}, {"caption": "", "createdAt": 1793451580957, "date": "2026-09-20", "photo": "d9ed952dead4ac80fdcb23f0470f7572", "id": "lnl8aopwpgcbcubhyj5w"}, {"caption": "", "createdAt": 1793451456287, "date": "2026-07-24", "photo": "c07e51b92a3e2b41f7edd78f9ee7a2cb", "id": "mb1qjbewx63guwm16fws"}, {"caption": "", "createdAt": 1793451444762, "date": "2026-07-30", "photo": "bd943e1a9b9751ddfc09873e965fa666", "id": "ol8c6lq4tg7jcji42o14"}, {"caption": "", "createdAt": 1793451477036, "date": "2026-07-03", "photo": "0ae07f10220774f072a1132dd13e817b", "id": "q8a0rmjy1yxu0ngr04qs"}, {"caption": "", "createdAt": 1793451588389, "date": "2026-09-10", "photo": "43100e04a9c33b4a26a6eac3143f6b74", "id": "qsyyk1xd9q9i6lz8dt00"}, {"caption": "", "createdAt": 1793451472609, "date": "2026-07-05", "photo": "bd84fee7180e3f21151b454ea0c0e722", "id": "s0n3x7trjr18rjkzvw4r"}, {"caption": "", "createdAt": 1793451470876, "date": "2026-07-07", "photo": "00d6ba270797e81c138691b9f5594170", "id": "sthogy9ajpetb5svix54"}, {"caption": "", "createdAt": 1793451442782, "date": "2026-07-27", "photo": "5d442a16f0b2a47a8e2453000633560b", "id": "u86yalc3dc0tsybgk01w"}, {"caption": "", "createdAt": 1793451462590, "date": "2026-07-22", "photo": "e812c0f42e1526dbcb1016291771d366", "id": "uee7zbnobe2gedlcod4z"}, {"caption": "", "createdAt": 1793451590584, "date": "2026-09-10", "photo": "9f42a7b456bce9b493e9db4ee8755059", "id": "vzbq34jwrwfjea3wsgbh"}, {"caption": "", "createdAt": 1793451586158, "date": "2026-09-10", "photo": "12e33bf80381e7fe57ac71e56ffdd3ba", "id": "x8togu5vg5prae8ee3yh"}, {"caption": "", "createdAt": 1793451592845, "date": "2026-09-07", "photo": "f91a6666bfbe2190ec6d089f9254cc40", "id": "xt04ed1s5hoaqttehyti"}, {"caption": "", "createdAt": 1793451478678, "date": "2026-06-30", "photo": "5d738343dec539b4facc0d81e7ef80fc", "id": "y933l40n3y17vcgovr28"}, {"caption": "", "createdAt": 1793451451005, "date": "2026-07-25", "photo": "f03b7bb0ca87a6ece2ad8e582f6f1ad3", "id": "zkqp2wq8c2wufhb5tzpj"}]};
   info=DATA.info; story=DATA.story; memories=DATA.memories;
-  renderHeader(); renderStory(); refreshDots(); renderAlbum();
+  renderStory(); renderAlbum();
+  // clocks
+  const tf=tz=>new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",hour12:false});
+  const hf=tz=>new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"numeric",hour12:false});
+  const partOf=h=>h<5?"asleep, probably":h<12?"morning":h<17?"afternoon":h<21?"evening":"night";
+  function clocks(){const n=new Date();
+    $("tBne").textContent=tf("Australia/Brisbane").format(n); $("tUb").textContent=tf("Asia/Ulaanbaatar").format(n);
+    $("pBne").textContent=partOf(+hf("Australia/Brisbane").format(n)%24); $("pUb").textContent=partOf(+hf("Asia/Ulaanbaatar").format(n)%24)}
+  clocks(); setInterval(clocks,15000);
+  if(reduce()){const h=$("arcHeart");h.querySelector("animateMotion").remove();h.setAttribute("transform","translate(150,40)")}
+  // finale
+  $("again").onclick=()=>{curId=null;renderStory();albumIdx=0;renderAlbum("prev");window.scrollTo({top:0,behavior:reduce()?"auto":"smooth"})};
+  // envelope
+  let opened=false; try{opened=sessionStorage.getItem("opened")==="1"}catch(_){}
+  function reveal(){ renderHeader(); refreshDots(); }
+  if(opened){ $("sealScreen").classList.add("gone"); reveal(); }
+  else{
+    document.body.classList.add("sealed");
+    $("sealBtn").onclick=()=>{
+      const sc=$("sealScreen"); sc.classList.add("opening");
+      try{sessionStorage.setItem("opened","1")}catch(_){}
+      setTimeout(()=>{document.body.classList.remove("sealed"); reveal()}, reduce()?0:1300);
+      setTimeout(()=>sc.classList.add("gone"), reduce()?50:2000);
+    };
+    $("sealBtn").focus();
+  }
   function showNote(t){const n=$("sysNote");n.textContent=t;n.hidden=false}
 })();
 </script>
