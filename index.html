@@ -246,7 +246,7 @@ button,input,textarea{font:inherit;color:inherit}
 
 /* envelope opening */
 .seal-screen{position:fixed;inset:0;z-index:80;background:radial-gradient(120% 90% at 50% 20%,#3a2340 0%,#1c1220 70%);color:#f5ecf3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
-  padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));text-align:center;transition:opacity 1s ease .9s,visibility 0s linear 1.9s}
+  padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));text-align:center;overflow:auto;transition:opacity .9s ease,visibility 0s linear .9s}
 .seal-screen .eyebrow{color:#d6b98c}
 .seal-screen h2{font-family:var(--f-display);font-weight:300;font-style:italic;font-size:clamp(2.6rem,9vw,4.2rem);margin:0;line-height:1}
 .seal-screen .hint{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:#bfaecb;animation:breathe 2.6s ease-in-out infinite}
@@ -269,11 +269,34 @@ button,input,textarea{font:inherit;color:inherit}
 .seal-screen.opening .seal{opacity:0;transform:scale(.6)}
 .seal-screen.opening .env-flap{transform:rotateX(180deg);z-index:0}
 .seal-screen.opening .env-card{transform:translateY(-62%)}
-.seal-screen.opening{opacity:0;visibility:hidden;pointer-events:none}
+.seal-screen.done{opacity:0;visibility:hidden;pointer-events:none}
 .seal-screen.gone{display:none}
 body.sealed{overflow:hidden}
 body.sealed .rise{animation-play-state:paused}
 body.sealed .dot{animation-play-state:paused}
+
+/* the letter */
+.letter-wrap{display:none;flex-direction:column;align-items:center;gap:26px;width:100%;max-width:560px;margin:auto}
+.seal-screen.letter{justify-content:flex-start}
+.seal-screen.letter>.eyebrow,.seal-screen.letter>h2,.seal-screen.letter>.env,.seal-screen.letter>.hint{display:none}
+.seal-screen.letter .letter-wrap{display:flex}
+.paper{width:100%;background:#fffdfb;color:#2a1f30;border-radius:4px;padding:44px 40px 36px;text-align:left;box-shadow:0 30px 70px -25px rgba(0,0,0,.7);position:relative;
+  background-image:linear-gradient(180deg,rgba(196,165,122,.0) 0,rgba(196,165,122,0) 100%)}
+.paper::before{content:"";position:absolute;inset:12px;border:1px solid rgba(196,165,122,.45);border-radius:2px;pointer-events:none}
+.paper .to{font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;color:#a88a5f;margin:0 0 18px}
+.paper .ln{font-family:var(--f-display);font-style:italic;font-weight:300;font-size:clamp(1.15rem,4.2vw,1.4rem);line-height:1.6;margin:0 0 4px}
+.paper .ln.first{font-size:clamp(1.5rem,5vw,1.8rem);margin-bottom:12px}
+.paper .sig{font-family:var(--f-display);font-style:italic;font-size:1.3rem;margin:22px 0 0;text-align:right;color:#8e4fa8}
+.seal-screen.letter .paper{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.seal-screen.letter .paper .ln,.seal-screen.letter .paper .sig{animation:rise .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(.5s + var(--i) * .55s)}
+.open-book{background:transparent;color:#f5ecf3;border:1px solid rgba(245,236,243,.6);border-radius:999px;padding:11px 26px;font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s}
+.open-book:hover{background:#f5ecf3;color:#3a2340}
+.seal-screen.letter .open-book{animation:rise .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(.8s + var(--n) * .55s)}
+/* letter on the page */
+.page-letter{max-width:620px;margin:0 auto;width:100%}
+.page-letter .paper{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.page-letter .paper .ln{color:var(--ink)}
+@media (max-width:640px){.paper{padding:34px 26px 28px}}
 
 /* between us */
 .between{display:grid;grid-template-columns:1fr 1.3fr 1fr;align-items:center;gap:20px;max-width:900px}
@@ -324,7 +347,7 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
 
 <div class="seal-screen" id="sealScreen" role="dialog" aria-label="A letter for you">
   <div class="eyebrow">Day 100 · 1 November</div>
-  <h2>For you</h2>
+  <h2>For my love</h2>
   <div class="env">
     <div class="env-back"></div>
     <div class="env-card"><span>Open me</span><b>Our <em>100</em> days</b></div>
@@ -333,6 +356,10 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     <button class="seal" type="button" id="sealBtn" aria-label="Open the letter">♡</button>
   </div>
   <div class="hint">Tap the seal</div>
+  <div class="letter-wrap">
+    <article class="paper" id="sealLetter"></article>
+    <button class="open-book" type="button" id="toBook">Open our scrapbook</button>
+  </div>
 </div>
 
 <div class="ambient" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div></div>
@@ -365,6 +392,10 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
   </header>
 
   <div class="note" id="sysNote" hidden></div>
+
+  <section class="page-letter" aria-label="A letter">
+    <article class="paper" id="pageLetter"></article>
+  </section>
 
   <section aria-labelledby="storyH" id="storySec">
     <div class="section-head">
@@ -779,17 +810,26 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
   if(reduce()){const h=$("arcHeart");h.querySelector("animateMotion").remove();h.setAttribute("transform","translate(150,40)")}
   // finale
   $("again").onclick=()=>{curId=null;renderStory();albumIdx=0;renderAlbum("prev");window.scrollTo({top:0,behavior:reduce()?"auto":"smooth"})};
+  // letter
+  const LETTER=["Hey bby,","bi chmg zunduu sanaj bno, ur the best,","i miss u a lot,","idk seeing u happy makes me happy,","i like making you happy its fun,","i love you so much,","comeover here, and then lets alaltsah with life together"];
+  function fillLetter(el){el.innerHTML=`<p class="to">To Anujin · Day 100</p>`+LETTER.map((l,i)=>`<p class="ln${i?"":" first"}" style="--i:${i}">${esc(l)}</p>`).join("")+`<p class="sig" style="--i:${LETTER.length}">— Baji ♡</p>`}
+  fillLetter($("sealLetter")); fillLetter($("pageLetter"));
+  $("toBook").style.setProperty("--n",LETTER.length);
   // envelope
   let opened=false; try{opened=sessionStorage.getItem("opened")==="1"}catch(_){}
   function reveal(){ renderHeader(); refreshDots(); }
   if(opened){ $("sealScreen").classList.add("gone"); reveal(); }
   else{
     document.body.classList.add("sealed");
+    const sc=$("sealScreen");
     $("sealBtn").onclick=()=>{
-      const sc=$("sealScreen"); sc.classList.add("opening");
+      sc.classList.add("opening");
       try{sessionStorage.setItem("opened","1")}catch(_){}
-      setTimeout(()=>{document.body.classList.remove("sealed"); reveal()}, reduce()?0:1300);
-      setTimeout(()=>sc.classList.add("gone"), reduce()?50:2000);
+      setTimeout(()=>{sc.classList.add("letter"); sc.scrollTop=0; $("toBook").focus({preventScroll:true})}, reduce()?0:1500);
+    };
+    $("toBook").onclick=()=>{
+      sc.classList.add("done"); document.body.classList.remove("sealed"); window.scrollTo(0,0); reveal();
+      setTimeout(()=>sc.classList.add("gone"), reduce()?50:1000);
     };
     $("sealBtn").focus();
   }
