@@ -305,6 +305,22 @@ body.sealed .dot{animation-play-state:paused}
 .page-letter .paper .ln{color:var(--ink)}
 @media (max-width:640px){.paper{padding:34px 26px 28px}}
 
+/* the night we first met */
+.sky{position:relative;width:100vw;margin-left:calc(50% - 50vw);background:radial-gradient(80% 60% at 50% 45%,#141327 0%,#0a0b10 70%);color:#e9e3ef;padding-block:96px 104px;overflow:hidden}
+.sky-in{max-width:940px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;align-items:center;text-align:center;gap:30px}
+.sky .num{color:#d6b98c}
+.sky .section-h{color:#f3ecf6}
+.sky-disc{position:relative;width:min(560px,86vw);max-width:100%;aspect-ratio:1;border-radius:50%;
+  box-shadow:0 0 0 1px rgba(214,185,140,.35),0 0 0 12px rgba(255,255,255,.012),0 0 0 13px rgba(214,185,140,.14),0 50px 140px -30px rgba(130,90,190,.5)}
+.sky-rot{position:absolute;inset:0;border-radius:50%;overflow:hidden;animation:skyturn 1200s linear infinite}
+.sky-rot img,.sky-rot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+@keyframes skyturn{to{transform:rotate(360deg)}}
+.sky-cap{font-size:.7rem;letter-spacing:.36em;text-transform:uppercase;color:#a9a0b8;line-height:2.2;margin:6px 0 0}
+.sky-heart{color:#d9829f;font-size:.9rem}
+.sky-note{font-family:var(--f-display);font-style:italic;font-weight:300;font-size:1.15rem;color:#cdc1d8;max-width:38ch;margin:0}
+.sky-field{position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:radial-gradient(1px 1px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 82% 12%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 78%,#f3e6ff,transparent),radial-gradient(1px 1px at 22% 72%,#fff,transparent),radial-gradient(1px 1px at 92% 52%,#fff,transparent),radial-gradient(1px 1px at 6% 48%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 8%,#ffe9c9,transparent),radial-gradient(1px 1px at 58% 94%,#fff,transparent)}
+
 /* between us */
 .between{display:grid;grid-template-columns:1fr 1.3fr 1fr;align-items:center;gap:20px;max-width:900px}
 .city{text-align:center}
@@ -431,8 +447,24 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     <div class="page-num" id="pageNum"></div>
   </section>
 
+
+  <section class="sky" aria-labelledby="skyH">
+    <div class="sky-field" aria-hidden="true"></div>
+    <div class="sky-in">
+      <div><span class="num">ii.</span><h2 class="section-h" id="skyH">The night we first met</h2></div>
+      <div class="sky-disc">
+        <div class="sky-rot">
+          <img src="img/sky.webp" alt="The night sky over Ulaanbaatar at 11:33 pm on 26 June 2026, with Arcturus, Vega and the Moon" loading="lazy">
+          <canvas id="twinkle" aria-hidden="true"></canvas>
+        </div>
+      </div>
+      <p class="sky-cap">26.06.2026 · 11:33 PM <span class="sky-heart">♥</span><br>Ulaanbaatar, Mongolia</p>
+      <p class="sky-note">This is exactly what the sky looked like over Ulaanbaatar the night we first met.</p>
+    </div>
+  </section>
+
   <section aria-labelledby="trackerH">
-    <div class="section-head"><div><span class="num">ii.</span><h2 class="section-h" id="trackerH">The hundred</h2></div></div>
+    <div class="section-head"><div><span class="num">iii.</span><h2 class="section-h" id="trackerH">The hundred</h2></div></div>
     <p class="dots-caption">One dot for every day since 25 July. The filled ones have photos; tap them.</p>
     <div class="dots" id="dots"></div>
     <div class="dots-legend">
@@ -443,7 +475,7 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
   </section>
 
   <section aria-labelledby="betweenH">
-    <div class="section-head"><div><span class="num">iii.</span><h2 class="section-h" id="betweenH">Between us</h2></div></div>
+    <div class="section-head"><div><span class="num">iv.</span><h2 class="section-h" id="betweenH">Between us</h2></div></div>
     <div class="between">
       <div class="city"><div class="time" id="tBne">--:--</div><div class="name">Brisbane</div><div class="part" id="pBne"></div></div>
       <div class="arc" aria-hidden="true">
@@ -461,7 +493,7 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
 
   <section aria-labelledby="albumH" id="albumSec">
     <div class="section-head">
-      <div><span class="num">iv.</span><h2 class="section-h" id="albumH">Us, in pictures</h2></div>
+      <div><span class="num">v.</span><h2 class="section-h" id="albumH">Us, in pictures</h2></div>
       <div class="actions">
         <span class="album-status" id="aStatus" aria-live="polite"></span>
         <button class="add" type="button" id="aAdd" hidden>Add photos</button>
@@ -815,6 +847,16 @@ footer p{font-family:var(--f-display);font-style:italic;font-weight:300;font-siz
     $("pBne").textContent=partOf(+hf("Australia/Brisbane").format(n)%24); $("pUb").textContent=partOf(+hf("Asia/Ulaanbaatar").format(n)%24)}
   clocks(); setInterval(clocks,15000);
   if(reduce()){const h=$("arcHeart");h.querySelector("animateMotion").remove();h.setAttribute("transform","translate(150,40)")}
+
+  // twinkling stars over the sky disc
+  (function(){const cv=$("twinkle"); if(!cv||reduce()) return; const ctx=cv.getContext("2d"); let W=0, pts=[];
+    function size(){const r=cv.getBoundingClientRect(), d=Math.min(2,devicePixelRatio||1); W=r.width; cv.width=r.width*d; cv.height=r.height*d; ctx.setTransform(d,0,0,d,0,0);
+      pts=Array.from({length:46},()=>{let x,y;do{x=Math.random();y=Math.random()}while((x-.5)**2+(y-.5)**2>.2);return{x,y,s:Math.random()*1.3+.4,p:Math.random()*6.28,v:.6+Math.random()*1.4}})}
+    let vis=false; new IntersectionObserver(e=>{vis=e[0].isIntersecting},{}).observe(cv);
+    function draw(t){requestAnimationFrame(draw); if(!vis||!W) return; ctx.clearRect(0,0,W,W);
+      for(const q of pts){const a=Math.max(0,Math.sin(q.p+t/1000*q.v)); if(a<.05) continue; ctx.globalAlpha=a*.9; ctx.fillStyle="#fff";
+        ctx.beginPath(); ctx.arc(q.x*W,q.y*W,q.s,0,6.283); ctx.fill(); if(q.s>1.2){ctx.globalAlpha=a*.35; ctx.fillRect(q.x*W-q.s*3,q.y*W-.4,q.s*6,.8); ctx.fillRect(q.x*W-.4,q.y*W-q.s*3,.8,q.s*6)}}}
+    size(); addEventListener("resize",size); requestAnimationFrame(draw)})();
   // finale
   $("again").onclick=()=>{curId=null;renderStory();albumIdx=0;renderAlbum("prev");window.scrollTo({top:0,behavior:reduce()?"auto":"smooth"})};
   // letter
