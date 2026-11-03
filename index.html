@@ -421,6 +421,25 @@ img{max-width:100%}
   .g-card{padding:24px 22px 20px}
 }
 @media (max-height:600px){.g-sub{display:none}}
+/* ========== our home: block-building plot, tools across the top, a hotbar of blocks along the bottom ========== */
+.builder .h-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;pointer-events:none}
+.builder .h-top>*{pointer-events:auto}
+.h-seg,.h-acts{display:flex;background:rgba(255,253,249,.93);border:1px solid rgba(184,147,92,.45);box-shadow:0 4px 14px -4px rgba(60,30,40,.3)}
+.h-seg button,.h-acts button{background:transparent;border:0;padding:7px 13px;font-family:var(--f-sans);font-size:.56rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-d);cursor:pointer;transition:background .25s,color .25s;min-height:32px}
+.h-seg button+button,.h-acts button+button{border-left:1px solid rgba(184,147,92,.3)}
+.h-seg button.on{background:var(--wine);color:#fdf3e4}
+.h-acts button:disabled{opacity:.4;cursor:default}
+.h-acts button.arm{color:var(--wine);background:#fbe9ee}
+.h-name{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);font-family:var(--f-serif);font-style:italic;font-size:1.05rem;color:#fffdf9;text-shadow:0 1px 6px rgba(40,20,30,.6);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.h-name.show{opacity:1}
+.h-bar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:4px;padding:5px;max-width:calc(100% - 28px);overflow-x:auto;scrollbar-width:none;background:rgba(43,32,38,.55);border:1px solid rgba(236,220,178,.55);-webkit-overflow-scrolling:touch}
+.h-bar::-webkit-scrollbar{display:none}
+.h-slot{flex:none;width:44px;height:44px;border:2px solid rgba(255,253,249,.25);background-size:cover;image-rendering:pixelated;cursor:pointer;padding:0;transition:transform .2s,border-color .2s}
+.h-slot.on{border-color:#f3e3b8;transform:translateY(-3px);box-shadow:0 0 0 1px var(--gold-d),0 6px 12px -4px rgba(0,0,0,.5)}
+.h-tip{position:absolute;left:50%;bottom:72px;transform:translateX(-50%);font-family:var(--f-sans);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:#fffdf9;text-shadow:0 1px 4px rgba(40,20,30,.6);white-space:nowrap;pointer-events:none;transition:opacity .3s}
+.builder .h-name.show~.h-tip{opacity:0}
+.builder.breaking canvas{cursor:crosshair}
+@media (max-width:760px),(max-aspect-ratio:4/5){.h-slot{width:40px;height:40px}.h-name{bottom:80px}.h-tip{bottom:66px;font-size:.5rem;letter-spacing:.14em}}
 </style>
 </head>
 <body>
@@ -577,6 +596,7 @@ img{max-width:100%}
   S.push({t:"hundred",lbl:"The hundred"});
   S.push({t:"between",lbl:"Between us"});
   S.push({t:"game",lbl:"Come find me"});
+  S.push({t:"home",lbl:"Our home"});
   S.push({t:"acover",lbl:"Us, in pictures"});
   spreads.forEach((set,i)=>S.push({t:"album",set,n:i+1,lbl:"Us, in pictures"}));
   S.push({t:"finale",lbl:"To be continued"});
@@ -631,6 +651,10 @@ img{max-width:100%}
       <div class="g-head"><div class="caps rv" style="--d:0">A little game</div><h3 class="rv" style="--d:1">Come find me</h3>${orn(2)}
       <p class="g-sub rv" style="--d:3">9,560 km is too far. I'm hiding somewhere in this tiny town, so come and close the gap.</p></div>
       <figure class="mount g-mount settle" style="--d:2;margin:0">${pcs}<div class="g-slot"></div></figure>${folio(S.findIndex(x=>x.t==="game")+1)}</article>`,
+    home:()=>`<article class="leaf g-page"><div class="frame"></div>${corner(75,"olive","tl",150)}${corner(76,"rose","br",190)}
+      <div class="g-head"><div class="caps rv" style="--d:0">Someday</div><h3 class="rv" style="--d:1">Our home</h3>${orn(2)}
+      <p class="g-sub rv" style="--d:3">I started the place we'll live one day. Help me finish it, one block at a time.</p></div>
+      <figure class="mount g-mount settle" style="--d:2;margin:0">${pcs}<div class="g-slot"></div></figure>${folio(S.findIndex(x=>x.t==="home")+1)}</article>`,
     acover:()=>{const pick=[photos[0],photos[Math.floor(photos.length/2)],photos[photos.length-1]].filter(Boolean);const pos=[["left:9%;top:12%","-3deg"],["right:9%;top:14%","2.5deg"],["left:16%;bottom:13%","2deg"]];
       return `<article class="leaf a-cover"><div class="frame"></div>${corner(51,"rose","br",260)}${corner(52,"olive","tl",200)}
         ${pick.map((m,i)=>`<figure class="mount settle" style="${pos[i][0]};--rot:${pos[i][1]};--d:${i};margin:0">${pcs}<span class="ph"><img src="photos/t/${esc(m.photo)}.jpg" alt=""></span></figure>`).join("")}
@@ -853,7 +877,185 @@ img{max-width:100%}
       document.addEventListener("visibilitychange",()=>{if(!document.hidden&&el.isConnected&&!pausedAt&&!running){running=true;last=performance.now();requestAnimationFrame(frame)}});
       return {begin,resume,pause};
     }
-    return {mount,prefetch:()=>loadThree().catch(()=>{})};
+    return {mount,loadThree,prefetch:()=>loadThree().catch(()=>{})};
+  })();
+
+  // ---------- our home: a block-building plot with the walls already up; it keeps what she builds on her phone ----------
+  const HOME=(function(){
+    const KEY="ourhome-v1", SEEN="ourhome-seen";
+    const B=[ // name, kind for texture
+      ["Oak planks","planks"],["Oak log","log"],["Brick","brick"],["Stone brick","stone"],["Glass","glass"],["Roof tile","roof"],
+      ["White wool","wool"],["Pink wool","pink"],["Leaves","leaves"],["Lamp","lamp"],["Heart","heart"],["Grass","grass"],["Dirt","dirt"]];
+    const ID=Object.fromEntries(B.map((b,i)=>[b[1],i]));
+    let el=null, api=null;
+    const q=s=>el.querySelector(s);
+    const isTouch=()=>matchMedia("(pointer:coarse)").matches;
+
+    // pixel textures, drawn on 16×16 canvases
+    function rnd(seed){let s=seed;return()=>(s=(s*16807)%2147483647)/2147483647}
+    function px(draw,seed){const c=document.createElement("canvas");c.width=c.height=16;const g=c.getContext("2d");draw(g,rnd(seed||7));return c}
+    const noise=(g,r,base,vars,amt)=>{for(let y=0;y<16;y++)for(let x=0;x<16;x++){const k=r();g.fillStyle=k<amt?vars[Math.floor(r()*vars.length)]:base;g.fillRect(x,y,1,1)}};
+    const T_={
+      grassTop:px((g,r)=>noise(g,r,"#8fab78",["#9fbb88","#7f9a69","#a7c18f"],.45),3),
+      grassSide:px((g,r)=>{noise(g,r,"#8a6447",["#7a5638","#9a7354","#6f4d33"],.5);for(let x=0;x<16;x++){const h=3+Math.floor(r()*2.2);g.fillStyle="#8fab78";g.fillRect(x,0,1,h);g.fillStyle="#7f9a69";g.fillRect(x,h-1,1,1)}},5),
+      dirt:px((g,r)=>noise(g,r,"#8a6447",["#7a5638","#9a7354","#6f4d33"],.5),9),
+      planks:px((g,r)=>{noise(g,r,"#c99a64",["#bd8e58","#d4a66f","#b98a55"],.35);g.fillStyle="#9c7243";for(let y=3;y<16;y+=4)g.fillRect(0,y,16,1);[[5,0],[12,4],[3,8],[10,12]].forEach(([x,y])=>g.fillRect(x,y,1,3))},11),
+      logSide:px((g,r)=>{for(let x=0;x<16;x++){g.fillStyle=["#6f4b30","#7d5638","#644229","#7a5536"][Math.floor(r()*4)];g.fillRect(x,0,1,16)}for(let i=0;i<10;i++){g.fillStyle="#563823";g.fillRect(Math.floor(r()*16),Math.floor(r()*16),1,2)}},13),
+      logTop:px((g,r)=>{g.fillStyle="#6f4b30";g.fillRect(0,0,16,16);[["#c99a64",1],["#b88a57",3],["#c99a64",5],["#a57a4a",7]].forEach(([c,i])=>{g.fillStyle=c;g.fillRect(i,i,16-i*2,16-i*2)})},15),
+      brick:px((g,r)=>{g.fillStyle="#d9cfc4";g.fillRect(0,0,16,16);for(let row=0;row<4;row++){const off=row%2?4:0;for(let b=-1;b<2;b++){const x=b*8+off;g.fillStyle=["#b4553f","#a84b37","#bf5f48"][Math.floor(r()*3)];g.fillRect(x+1,row*4+1,7,3)}}},17),
+      stone:px((g,r)=>{noise(g,r,"#a8a39e",["#9b9590","#b5b0aa","#908a85"],.4);g.fillStyle="#7f7a75";g.fillRect(0,7,16,1);g.fillRect(0,15,16,1);g.fillRect(7,0,1,7);g.fillRect(3,8,1,7);g.fillRect(12,8,1,7)},19),
+      glass:px((g)=>{g.clearRect(0,0,16,16);g.fillStyle="rgba(220,236,242,.35)";g.fillRect(0,0,16,16);g.fillStyle="#f4fbff";g.fillRect(0,0,16,1);g.fillRect(0,15,16,1);g.fillRect(0,0,1,16);g.fillRect(15,0,1,16);g.fillRect(3,4,1,1);g.fillRect(4,3,1,1);g.fillRect(4,5,1,1);g.fillRect(5,4,1,1)}),
+      roof:px((g,r)=>{noise(g,r,"#8c2f4a",["#7a2840","#9b3956","#842c45"],.35);g.fillStyle="#5e1c30";for(let y=3;y<16;y+=4){g.fillRect(0,y,16,1);const o=(y%8===3)?0:4;for(let x=o;x<16;x+=8)g.fillRect(x,y-3,1,3)}},21),
+      wool:px((g,r)=>noise(g,r,"#f6f1ea",["#ebe4da","#fffdf9","#e4dccf"],.4),23),
+      pink:px((g,r)=>noise(g,r,"#e9b7c5",["#dfa7b7","#f2c9d3","#d99aaa"],.4),25),
+      leaves:px((g,r)=>{noise(g,r,"#6f8f5e",["#5f7f52","#82a26d","#4f6b44"],.6);for(let i=0;i<14;i++){g.fillStyle="#3f5737";g.fillRect(Math.floor(r()*16),Math.floor(r()*16),1,1)}},27),
+      lamp:px((g,r)=>{g.fillStyle="#d9a441";g.fillRect(0,0,16,16);g.fillStyle="#f3d27a";g.fillRect(2,2,12,12);g.fillStyle="#fff1c4";g.fillRect(5,5,6,6);for(let i=0;i<10;i++){g.fillStyle="#fff8dc";g.fillRect(2+Math.floor(r()*12),2+Math.floor(r()*12),1,1)}},29),
+      heart:px((g,r)=>{noise(g,r,"#f2c9d3",["#e9b7c5","#f7dae1"],.35);g.fillStyle="#a8476b";["0110110","1111111","1111111","0111110","0011100","0001000"].forEach((row,y)=>[...row].forEach((c,x)=>{if(c==="1")g.fillRect(x+4,y+5,1,1)}));g.fillStyle="#f7dae1";g.fillRect(5,6,1,1)},31),
+    };
+    const faces={grass:["grassSide","grassSide","grassTop","dirt","grassSide","grassSide"],log:["logSide","logSide","logTop","logTop","logSide","logSide"]};
+    const texKeyOf=k=>faces[k]||Array(6).fill({planks:"planks",brick:"brick",stone:"stone",glass:"glass",roof:"roof",wool:"wool",pink:"pink",leaves:"leaves",lamp:"lamp",heart:"heart",dirt:"dirt"}[k]);
+    const swatch=k=>{const f=texKeyOf(k)[4];return T_[f].toDataURL()};
+
+    // the starting plot: walls up, no roof yet, a bed for two, a path, a tree
+    function starter(){const m=new Map(),put=(x,y,z,t)=>m.set(x+","+y+","+z,t);
+      for(let x=-12;x<=12;x++)for(let z=-12;z<=12;z++)put(x,0,z,ID.grass);
+      for(let x=-4;x<=4;x++)for(let z=-3;z<=3;z++)put(x,0,z,ID.planks);
+      for(let y=1;y<=3;y++)for(let x=-4;x<=4;x++)for(let z=-3;z<=3;z++){
+        if(Math.abs(x)!==4&&Math.abs(z)!==3)continue;
+        if(z===3&&x===0&&y<=2)continue; // the door
+        let t=ID.planks;
+        if(Math.abs(x)===4&&Math.abs(z)===3)t=ID.log;
+        else if(y===2&&((Math.abs(z)===3&&Math.abs(x)===2)||(Math.abs(x)===4&&z===0)))t=ID.glass;
+        put(x,y,z,t)}
+      for(let x=-4;x<=4;x++)for(let z=-3;z<=3;z++)if(Math.abs(x)===4||Math.abs(z)===3)put(x,4,z,ID.log);
+      put(0,3,3,ID.heart);
+      put(-1,1,-2,ID.wool);put(0,1,-2,ID.wool);put(-1,1,-1,ID.pink);put(0,1,-1,ID.pink); // bed for two
+      put(2,1,-2,ID.lamp);put(-3,1,-2,ID.planks);
+      for(let z=4;z<=9;z++)put(0,0,z,ID.stone);
+      [[-2,5],[2,5],[-3,5],[3,5]].forEach(([x,z],i)=>put(x,1,z,i<2?ID.pink:ID.leaves));
+      for(let y=1;y<=4;y++)put(7,y,-6,ID.log);
+      for(let x=6;x<=8;x++)for(let z=-7;z<=-5;z++)for(let y=4;y<=5;y++)if(!(x===7&&z===-6&&y===4))put(x,y,z,ID.leaves);
+      put(7,6,-6,ID.leaves);
+      return m}
+    function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.v===1&&Array.isArray(s.b)){const m=new Map();s.b.forEach(([x,y,z,t])=>{if(B[t])m.set(x+","+y+","+z,t)});return m}}catch(_){}return starter()}
+
+    function build(){
+      el=document.createElement("div");el.className="game builder";el.tabIndex=0;
+      el.setAttribute("aria-label","Our home. Tap or click to place a block, switch to Break to remove one, drag to turn, pinch or scroll to zoom.");
+      el.innerHTML=`<canvas></canvas>
+        <div class="h-top"><div class="h-seg" role="group" aria-label="Tool"><button type="button" data-tool="build" class="on" aria-pressed="true">Build</button><button type="button" data-tool="break" aria-pressed="false">Break</button></div>
+          <div class="h-acts"><button type="button" data-h="undo" disabled>Undo</button><button type="button" data-h="reset">Start over</button></div></div>
+        <div class="h-name" aria-live="polite"></div>
+        <div class="h-bar" role="listbox" aria-label="Blocks">${B.map((b,i)=>`<button type="button" role="option" class="h-slot${i?"":" on"}" data-b="${i}" aria-label="${b[0]}" aria-selected="${i?"false":"true"}" style="background-image:url(${swatch(b[1])})"></button>`).join("")}</div>
+        <div class="h-tip">${isTouch()?"Tap to place · drag to turn · pinch to zoom":"Click to place · right-click to break · drag to turn · scroll to zoom · 1–9 picks a block"}</div>
+        <div class="g-over"${(()=>{try{return localStorage.getItem(SEEN)?" hidden":""}catch(_){return""}})()}><div class="g-card"><span class="caps">Someday, for real</span><h4>Our <em class="foil">home</em></h4>
+          <p>I put the walls up and made us a bed. The roof, the rooms and the garden are yours. Whatever you build stays here on this phone.</p>
+          <button class="btn" type="button" data-h="go">Start building</button></div></div>`;
+      if(isTouch())el.classList.add("touch");
+    }
+    function mount(slot){if(!el)build();slot.appendChild(el);let alive=true;
+      if(api)api.resume();
+      else GAME.loadThree().then(()=>{if(!api)api=init();if(alive)api.resume()}).catch(()=>{q(".g-over").hidden=false;q(".g-card").innerHTML=`<h4>Our <em>home</em></h4><p>This page couldn't load. Check your connection, then turn the page and come back.</p>`});
+      return()=>{alive=false;if(api)api.pause()}}
+
+    function init(){
+      const T=THREE, cv=q("canvas");
+      const renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
+      renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
+      const scene=new T.Scene(),SKY=0xf3ddd6;scene.background=new T.Color(SKY);scene.fog=new T.Fog(SKY,45,95);
+      const camera=new T.PerspectiveCamera(50,1.6,.1,300);
+      scene.add(new T.HemisphereLight(0xfff6ee,0x7d8f6c,.62));
+      const sun=new T.DirectionalLight(0xffeedd,.78);sun.position.set(16,28,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+      Object.assign(sun.shadow.camera,{left:-20,right:20,top:20,bottom:-20,near:1,far:70});sun.shadow.bias=-.0008;scene.add(sun);
+      const texCache={};const tex=k=>{if(!texCache[k]){const t=new T.CanvasTexture(T_[k]);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;texCache[k]=t}return texCache[k]};
+      const geo=new T.BoxGeometry(1,1,1), CAP=4000, meshes=[], lists=B.map(()=>[]), dummy=new T.Object3D();
+      B.forEach((b,i)=>{const k=b[1];const ms=texKeyOf(k).map(f=>new T.MeshLambertMaterial({map:tex(f),transparent:k==="glass",opacity:k==="glass"?.55:1,depthWrite:k!=="glass",emissive:k==="lamp"?0x7a5a10:0x000000}));
+        const m=new T.InstancedMesh(geo,ms,CAP);m.count=0;m.castShadow=k!=="glass";m.receiveShadow=true;m.frustumCulled=false;m.userData.t=i;if(k==="glass")m.renderOrder=2;scene.add(m);meshes.push(m)});
+      let world=load();
+      function rebuild(){lists.forEach(l=>l.length=0);world.forEach((t,key)=>lists[t].push(key));
+        meshes.forEach((m,i)=>{const l=lists[i];m.count=Math.min(l.length,CAP);for(let j=0;j<m.count;j++){const [x,y,z]=l[j].split(",").map(Number);dummy.position.set(x,y,z);dummy.updateMatrix();m.setMatrixAt(j,dummy.matrix)}m.instanceMatrix.needsUpdate=true});req()}
+      let saveT=null;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify({v:1,b:[...world].map(([k,t])=>[...k.split(",").map(Number),t])}))}catch(_){}},300)}
+
+      // the two of us, standing by the door
+      function avatar(o){const g=new T.Group(),m=c=>new T.MeshLambertMaterial({color:c}),sk=m(o.skin),sh=m(o.shirt),pa=m(o.pants),ha=m(o.hair);
+        const part=(w,h,d,mt,x,y,z)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt);b.position.set(x,y,z);b.castShadow=true;g.add(b);return b};
+        part(.46,.95,.46,pa,-.24,.475,0);part(.46,.95,.46,pa,.24,.475,0);part(1.02,1,.52,sh,0,1.45,0);
+        const aL=part(.42,.95,.42,sh,-.73,1.45,0),aR=part(.42,.95,.42,sh,.73,1.45,0);
+        const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,17,6,.35,Math.PI-.35);x.stroke();x.fillStyle="rgba(200,100,130,.45)";x.fillRect(5,19,4,2);x.fillRect(23,19,4,2);
+        const ft=new T.CanvasTexture(c);ft.magFilter=T.NearestFilter;
+        const head=new T.Mesh(new T.BoxGeometry(.72,.72,.72),[sk,sk,sk,sk,new T.MeshLambertMaterial({map:ft}),sk]);head.position.y=2.32;head.castShadow=true;g.add(head);
+        part(.78,.2,.78,ha,0,2.72,0);if(o.long)part(.78,.95,.2,ha,0,2.25,-.33);else part(.78,.3,.16,ha,0,2.55,-.32);if(o.bow)part(.34,.18,.12,m(0xe9c6cf),.28,2.82,-.28);
+        g.scale.setScalar(.7);scene.add(g);return{g,aL,aR}}
+      const her=avatar({skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xa8476b,pants:0x3d2a36,hair:0x2b1d18,long:true,bow:true});
+      const him=avatar({skin:0xe9bf98,skinCss:"#e9bf98",shirt:0x41577a,pants:0x2b2026,hair:0x1c1410});
+      her.g.position.set(-.5,.5,5.4);him.g.position.set(.5,.5,5.4);her.aR.rotation.z=.35;him.aL.rotation.z=-.35; // holding hands
+
+      // the outline of the block you're about to change (mouse only)
+      const ghost=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(1.02,1.02,1.02)),new T.LineBasicMaterial({color:0x8c2f4a,transparent:true,opacity:.8}));ghost.visible=false;scene.add(ghost);
+
+      // camera: orbit around the house
+      let yaw=.55,pitch=.62,dist=21;const target=new T.Vector3(0,2.5,0);
+      function place(){camera.position.set(target.x+Math.sin(yaw)*Math.cos(pitch)*dist,target.y+Math.sin(pitch)*dist,target.z+Math.cos(yaw)*Math.cos(pitch)*dist);camera.lookAt(target)}
+      let running=false,pending=false;
+      function req(){if(!running||pending)return;pending=true;requestAnimationFrame(()=>{pending=false;place();renderer.render(scene,camera)})}
+
+      // building
+      let tool="build",cur=0;const undo=[];
+      const inBounds=(x,y,z)=>Math.abs(x)<=12&&Math.abs(z)<=12&&y>=0&&y<=18;
+      const ray=new T.Raycaster(),ndc=new T.Vector2();
+      function pick(cx,cy){const r=cv.getBoundingClientRect();ndc.set((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+        const h=ray.intersectObjects(meshes,false)[0];if(!h||h.instanceId==null)return null;
+        const key=lists[h.object.userData.t][h.instanceId];if(!key)return null;const [x,y,z]=key.split(",").map(Number);
+        const n=h.face.normal;return{x,y,z,nx:x+Math.round(n.x),ny:y+Math.round(n.y),nz:z+Math.round(n.z)}}
+      function setBlock(key,t){const before=world.has(key)?world.get(key):null;if(before===t)return;if(t==null)world.delete(key);else world.set(key,t);
+        undo.push([key,before]);if(undo.length>80)undo.shift();q('[data-h="undo"]').disabled=false;rebuild();save()}
+      function act(cx,cy,breaking){const p=pick(cx,cy);if(!p)return;
+        if(breaking)setBlock(p.x+","+p.y+","+p.z,null);
+        else{if(!inBounds(p.nx,p.ny,p.nz))return;const k=p.nx+","+p.ny+","+p.nz;if(world.has(k))return;setBlock(k,cur)}
+        if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}}
+      function hover(cx,cy){const p=pick(cx,cy);if(!p){ghost.visible=false;req();return}
+        const br=tool==="break";ghost.position.set(br?p.x:p.nx,br?p.y:p.ny,br?p.z:p.nz);ghost.material.color.set(br?0x8c2f4a:0xb8935c);ghost.visible=br||inBounds(p.nx,p.ny,p.nz);req()}
+
+      // input
+      const pts=new Map();let pinch=0,moved=false,downT=0;
+      cv.addEventListener("contextmenu",e=>e.preventDefault());
+      cv.addEventListener("pointerdown",e=>{if(e.pointerType==="touch")el.classList.add("touch");cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY});
+        if(pts.size===1){moved=false;downT=performance.now()}else{moved=true;const [a,b]=[...pts.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y)}});
+      cv.addEventListener("pointermove",e=>{const p=pts.get(e.pointerId);
+        if(!p){if(e.pointerType==="mouse")hover(e.clientX,e.clientY);return}
+        const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+        if(pts.size===1){if(Math.hypot(p.x-p.sx,p.y-p.sy)>6)moved=true;if(moved){yaw-=dx*.008;pitch=Math.max(.12,Math.min(1.45,pitch+dy*.006));ghost.visible=false;req()}}
+        else if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch){dist=Math.max(8,Math.min(46,dist*pinch/d));req()}pinch=d}});
+      const up=e=>{const p=pts.get(e.pointerId);if(!p)return;pts.delete(e.pointerId);
+        if(pts.size===0&&!moved&&e.type==="pointerup"&&performance.now()-downT<600)act(e.clientX,e.clientY,tool==="break"||e.button===2);
+        if(pts.size<2)pinch=0;if(e.pointerType==="mouse")hover(e.clientX,e.clientY)};
+      cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+      cv.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){ghost.visible=false;req()}});
+      cv.addEventListener("wheel",e=>{e.preventDefault();dist=Math.max(8,Math.min(46,dist*(1+Math.sign(e.deltaY)*.08)));req()},{passive:false});
+
+      // controls
+      const nameEl=q(".h-name");let nameT=null;
+      function choose(i){cur=i;el.querySelectorAll(".h-slot").forEach((s,j)=>{s.classList.toggle("on",j===i);s.setAttribute("aria-selected",j===i?"true":"false")});
+        nameEl.textContent=B[i][0];nameEl.classList.add("show");clearTimeout(nameT);nameT=setTimeout(()=>nameEl.classList.remove("show"),1200);
+        if(tool!=="build")setTool("build");const s=el.querySelectorAll(".h-slot")[i];s.scrollIntoView({block:"nearest",inline:"nearest"})}
+      function setTool(t){tool=t;el.querySelectorAll("[data-tool]").forEach(b=>{const on=b.dataset.tool===t;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false")});el.classList.toggle("breaking",t==="break")}
+      el.querySelectorAll(".h-slot").forEach(s=>s.onclick=()=>choose(+s.dataset.b));
+      el.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+      q('[data-h="undo"]').onclick=()=>{const u=undo.pop();if(!u)return;const [k,before]=u;if(before==null)world.delete(k);else world.set(k,before);q('[data-h="undo"]').disabled=!undo.length;rebuild();save()};
+      let resetArmed=null;const rb=q('[data-h="reset"]');
+      rb.onclick=()=>{if(!resetArmed){rb.textContent="Tap again to reset";rb.classList.add("arm");resetArmed=setTimeout(()=>{resetArmed=null;rb.textContent="Start over";rb.classList.remove("arm")},3000);return}
+        clearTimeout(resetArmed);resetArmed=null;rb.textContent="Start over";rb.classList.remove("arm");world=starter();undo.length=0;q('[data-h="undo"]').disabled=true;rebuild();try{localStorage.removeItem(KEY)}catch(_){}};
+      q('[data-h="go"]').onclick=()=>{q(".g-over").hidden=true;try{localStorage.setItem(SEEN,"1")}catch(_){}el.focus({preventScroll:true})};
+      el.addEventListener("keydown",e=>{const n=+e.key;if(n>=1&&n<=9&&B[n-1]){choose(n-1);e.stopPropagation()}else if(e.key==="b"||e.key==="B"){setTool(tool==="build"?"break":"build");e.stopPropagation()}
+        else if((e.ctrlKey||e.metaKey)&&e.key==="z"){e.preventDefault();q('[data-h="undo"]').click()}});
+
+      let sized=false;
+      function size(){const w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(!sized){sized=true;if(w<520)dist=32}req()}
+      new ResizeObserver(size).observe(el);
+      rebuild();
+      return{resume(){running=true;size();req()},pause(){running=false;pts.clear();ghost.visible=false}};
+    }
+    return{mount};
   })();
 
   // ---------- page turning ----------
@@ -893,7 +1095,8 @@ img{max-width:100%}
     if(s.t==="between"){clocks(); if(reduce()){const h=el.querySelector(".arcHeart");h.querySelector("animateMotion").remove();h.setAttribute("transform","translate(150,40)")}}
     if(s.t==="finale") stopFx.push(celebrate(el.querySelector(".celebrate")));
     if(s.t==="game") stopFx.push(GAME.mount(el.querySelector(".g-slot")));
-    const nx=S[cur+1]; if(nx&&nx.t==="game") GAME.prefetch();
+    if(s.t==="home") stopFx.push(HOME.mount(el.querySelector(".g-slot")));
+    const nx=S[cur+1]; if(nx&&(nx.t==="game"||nx.t==="home")) GAME.prefetch();
     if(nx&&(nx.t==="album"||nx.t==="chapter"||nx.t==="acover")){const tmp=document.createElement("div");tmp.innerHTML=R[nx.t](nx);tmp.querySelectorAll("img").forEach(im=>{const p=new Image();p.src=im.getAttribute("src")})}
   }
 
