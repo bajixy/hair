@@ -151,10 +151,10 @@ const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xa8476b
 const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
 Object.values(people).forEach(p=>p.g.visible=false);
 
-// our little girl: twin tails, a sunny dress. Her walk is timed by the clock, so she's in the same spot on both phones; tap her for a hop and hearts
+// our little girl: twin tails, a purple dress. Her walk is timed by the clock, so she's in the same spot on both phones; tap her for a hop and hearts
 const KID=(function(){
   const g=new T.Group(),body=new T.Group();g.add(body);
-  const m=c=>new T.MeshLambertMaterial({color:c}),sk=m(0xf3cfae),dress=m(0xf2c76e),skirt=m(0xe9b85a),collar=m(0xfffdf9),tights=m(0xfaf6ef),shoe=m(0x8c2f4a),hair=m(0x2b1d18),bow=m(0xa8476b);
+  const m=c=>new T.MeshLambertMaterial({color:c}),sk=m(0xf3cfae),dress=m(0x8e5aa8),skirt=m(0x7a4794),collar=m(0xfffdf9),tights=m(0xfaf6ef),shoe=m(0x8c2f4a),hair=m(0x2b1d18),bow=m(0xa8476b);
   const part=(w,h,d,mt,x,y,z,p=body)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt);b.position.set(x,y,z);b.castShadow=true;p.add(b);return b};
   const limb=(mt,x,y,len,w,end)=>{const p=new T.Group();p.position.set(x,y,0);body.add(p);part(w,len,w,mt,0,-len/2,0,p);if(end)part(w+.03,.15,w+.08,end,0,-len+.07,.03,p);return p};
   const legL=limb(tights,-.17,.62,.62,.3,shoe),legR=limb(tights,.17,.62,.62,.3,shoe);
