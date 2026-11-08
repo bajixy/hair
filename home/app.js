@@ -138,45 +138,63 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
   const part=(w,h,d,mt,x,y,z,p=body)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt);b.position.set(x,y,z);b.castShadow=true;p.add(b);return b};
   const limb=(mt,x,y,len,w)=>{const p=new T.Group();p.position.set(x,y,0);body.add(p);part(w,len,w,mt,0,-len/2,0,p);return p};
   let legL,legR,armL,armR;
-  if(o.glam){
-    // Anujin: a fitted wine wrap dress with a gold belt, bare arms with a bangle, heels, long glossy hair, lashes and a rose lip
-    const dr=m(0x8c2f4a),dr2=m(0x7a2840),gold=new T.MeshLambertMaterial({color:0xd9b46a,emissive:0x3a2a08}),heel=m(0x3d1424);
-    const leg=sd=>{const p=new T.Group();p.position.set(sd*.19,1.02,0);body.add(p);part(.34,1.02,.34,sk,0,-.51,0,p);part(.38,.12,.5,heel,0,-.98,.04,p);part(.1,.16,.1,heel,0,-.96,-.17,p);part(.36,.05,.36,gold,0,-.84,0,p);return p};
+  if(o.street){
+    // Anujin: cream cropped baby tee, black baggy cargos with a chain, Docs with the yellow stitch, tattooed arms
+    const tee=m(0xf3ede3),cargo=m(0x1f1c22),cargo2=m(0x2b2730),boot=m(0x141016),sole=m(0x0b0809),stitch=new T.MeshLambertMaterial({color:0xe3c34a,emissive:0x2a2008}),
+      silver=new T.MeshLambertMaterial({color:0xd8d8de,emissive:0x2a2a30});
+    const inkTex=draw=>{const c=document.createElement("canvas");c.width=16;c.height=32;const k=c.getContext("2d");k.fillStyle=o.skinCss;k.fillRect(0,0,16,32);k.fillStyle="rgba(30,26,34,.85)";
+      draw((...r)=>{for(let j=0;j<r.length;j+=2)k.fillRect(r[j],r[j+1],1,1)});const t=new T.CanvasTexture(c);t.magFilter=T.NearestFilter;return new T.MeshLambertMaterial({map:t})};
+    const inkL=inkTex(d=>{d(6,3,7,3,8,3,5,4,9,4,5,5,7,5,9,5,6,6,8,6,7,7,7,8,6,9,8,10,5,11,9,12,4,13,10,14,4,15,11,16,5,17,12,18,  // rose and its vine
+      11,22,10,23,11,23,12,23,11,24, 3,22,5,22,3,23,4,23,5,23,4,24, 2,28,3,28,4,28,5,28,6,28,7,28,8,28,9,28,10,28,11,28,12,28,13,28)}); // star, heart, wrist band
+    const inkR=inkTex(d=>{d(5,4,6,5,7,6,9,6,10,5,11,4,5,6,6,7,10,7,11,6,8,6,8,7,8,8,6,8,10,8,  // butterfly
+      4,13,5,13,6,14,7,14,8,13,9,13,10,14,11,14,  4,16,6,16,8,16,10,16,  // script
+      10,21,9,22,9,23,9,24,10,25,11,25, 3,27,3,28,3,29, 2,28,4,28)}); // moon, sparkle
+    const leg=sd=>{const p=new T.Group();p.position.set(sd*.23,1.02,0);body.add(p);
+      part(.42,.76,.44,cargo,0,-.38,0,p);part(.06,.24,.26,cargo2,sd*.23,-.36,.02,p);part(.44,.05,.46,cargo2,0,-.74,0,p);
+      part(.38,.3,.52,boot,0,-.86,.04,p);part(.42,.08,.6,sole,0,-1.04,.05,p);part(.43,.025,.61,stitch,0,-.99,.05,p);part(.12,.12,.03,stitch,0,-.72,-.235,p);
+      part(.14,.2,.02,cargo2,0,-.8,.3,p);return p};
     legL=leg(-1);legR=leg(1);
-    part(.9,.5,.56,dr,0,.82,0);part(.92,.08,.58,dr2,0,.6,0);
-    part(.74,.3,.44,dr,0,1.2,0);part(.78,.08,.48,gold,0,1.1,0);part(.12,.12,.06,gold,.16,1.1,.25);
-    part(.9,.5,.5,dr,0,1.58,0);part(.04,.42,.02,dr2,-.08,1.6,.26);part(.3,.16,.02,sk,.02,1.76,.255);part(.05,.07,.03,gold,.02,1.66,.27);
-    part(.3,.16,.3,sk,0,1.9,0);
-    const arm=sd=>{const p=new T.Group();p.position.set(sd*.6,1.8,0);body.add(p);part(.3,.9,.3,sk,0,-.45,0,p);part(.34,.07,.34,gold,0,-.7,0,p);return p};
-    armL=arm(-1);armR=arm(1);
+    part(.86,.16,.5,cargo,0,1.06,0);part(.88,.05,.52,cargo2,0,1.12,0);
+    [[-.34,1.0],[-.27,.95],[-.19,.93],[-.11,.95],[-.04,1.0]].forEach(([cx,cy])=>part(.05,.05,.05,silver,cx,cy,.27));
+    part(.7,.18,.42,sk,0,1.23,0);
+    part(.86,.52,.48,tee,0,1.58,0);part(.88,.06,.5,m(0xe4dccf),0,1.34,0);part(.06,.05,.02,m(0x8c2f4a),.15,1.66,.25);part(.06,.05,.02,m(0x8c2f4a),.22,1.66,.25);part(.12,.05,.02,m(0x8c2f4a),.185,1.62,.25);part(.05,.04,.02,m(0x8c2f4a),.185,1.585,.25);
+    part(.3,.12,.3,sk,0,1.9,0);part(.32,.03,.32,silver,0,1.86,0);part(.05,.06,.03,silver,0,1.8,.17);
+    const arm=(sd,ink)=>{const p=new T.Group();p.position.set(sd*.59,1.8,0);body.add(p);part(.36,.26,.36,tee,0,-.12,0,p);part(.3,.66,.3,ink,0,-.58,0,p);part(.06,.06,.06,silver,sd*.1,-.9,.13,p);return p};
+    armL=arm(-1,inkL);armR=arm(1,inkR);
   }else{
     legL=limb(pa,-.24,.95,.95,.46);legR=limb(pa,.24,.95,.95,.46);part(1.02,1,.52,sh,0,1.45,0);
     armL=limb(sh,-.73,1.92,.95,.42);armR=limb(sh,.73,1.92,.95,.42);part(.42,.2,.42,sk,0,-.92,0,armL);part(.42,.2,.42,sk,0,-.92,0,armR);
   }
-  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");if(!o.glam){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);
+  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");if(!o.street){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);
   x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,17,6,.35,Math.PI-.35);x.stroke();x.fillStyle="rgba(200,100,130,.45)";x.fillRect(5,19,4,2);x.fillRect(23,19,4,2);}
-  if(o.glam){x.fillStyle="#f1c9a5";x.fillRect(0,0,32,32);
+  if(o.street){x.fillStyle="#f1c9a5";x.fillRect(0,0,32,32);
     const px_=(c,...r)=>{x.fillStyle=c;for(let i=0;i<r.length;i+=4)x.fillRect(r[i],r[i+1],r[i+2],r[i+3])};
-    px_("#6b4434",8,9,1,1,9,8,3,1,12,9,1,1,19,9,1,1,20,8,3,1,23,9,1,1);
     px_("#3a2418",9,12,4,5,19,12,4,5);px_("#1a1014",10,13,2,3,20,13,2,3);px_("#fffdf9",10,13,1,1,20,13,1,1,12,15,1,1,22,15,1,1);
-    px_("#1a1014",8,11,6,1,18,11,6,1,7,10,1,1,24,10,1,1);
-    px_("rgba(222,120,150,.5)",5,18,4,2,23,18,4,2);px_("#e2b08f",15,18,2,1);
-    px_("#a8344f",12,21,1,1,19,21,1,1,13,22,6,1);px_("#c9566f",14,23,4,1);
+    px_("#1a1014",8,11,6,1,18,11,6,1,7,10,1,1,6,9,1,1,24,10,1,1,25,9,1,1,8,17,1,1,23,17,1,1);
+    px_("rgba(222,120,150,.45)",5,18,4,2,23,18,4,2);px_("#e2b08f",15,18,2,1);
+    px_("#9a3a50",12,21,1,1,19,21,1,1,13,22,6,1);px_("#b85068",14,23,4,1);
   }
 
   const ft=new T.CanvasTexture(c);ft.magFilter=T.NearestFilter;
   const head=new T.Mesh(new T.BoxGeometry(.72,.72,.72),[sk,sk,sk,sk,new T.MeshLambertMaterial({map:ft}),sk]);head.position.y=2.32;head.castShadow=true;body.add(head);
-  if(o.glam){
-    part(.8,.18,.8,ha,0,2.74,0);part(.82,1.38,.2,ha,0,2.06,-.35);part(.7,.3,.16,ha,0,1.42,-.33);
-    [-1,1].forEach(sd=>{part(.14,.86,.26,ha,sd*.41,2.2,-.02);part(.14,.4,.22,ha,sd*.43,1.62,.04)});
-    const fr=part(.52,.13,.06,ha,-.12,2.6,.39);fr.rotation.z=.18;part(.26,.1,.06,ha,.22,2.64,.39);
-    part(.06,.12,.06,gold_(),-.42,2.0,.2);part(.06,.12,.06,gold_(),.42,2.0,.2);
-    part(.3,.16,.1,m(0xe9c6cf),.3,2.76,-.26);part(.12,.12,.12,gold_(),.3,2.76,-.26);
+  if(o.street){
+    // wolf cut: volume at the crown, blunt bangs, choppy layers to the shoulders, ears out with piercings
+    const silver=new T.MeshLambertMaterial({color:0xd8d8de,emissive:0x2a2a30});
+    part(.82,.2,.82,ha,0,2.75,0);part(.62,.08,.6,ha,-.04,2.88,-.04);part(.3,.06,.3,ha,.14,2.94,.06);
+    part(.76,.2,.09,ha,0,2.58,.39);part(.1,.07,.09,ha,-.22,2.45,.39);part(.12,.06,.09,ha,.12,2.46,.39);part(.08,.05,.09,ha,.3,2.47,.39);
+    [-1,1].forEach(sd=>{
+      part(.1,.34,.12,ha,sd*.4,2.41,.29);
+      part(.07,.17,.12,sk,sd*.375,2.25,.08);
+      part(.12,.64,.38,ha,sd*.41,2.24,-.19);part(.12,.34,.22,ha,sd*.4,1.84,-.25);part(.1,.14,.12,ha,sd*.39,1.62,-.2);
+      part(.04,.04,.04,silver,sd*.415,2.33,.08);part(.04,.04,.04,silver,sd*.415,2.25,.12);part(.04,.04,.04,silver,sd*.415,2.18,.11);
+      part(.03,.1,.03,silver,sd*.415,2.08,.1);part(.03,.03,.07,silver,sd*.415,2.03,.09)});
+    part(.82,.78,.18,ha,0,2.32,-.36);part(.66,.3,.16,ha,0,1.8,-.34);
+    part(.14,.16,.12,ha,-.25,1.6,-.33);part(.12,.2,.12,ha,.06,1.56,-.34);part(.14,.12,.12,ha,.27,1.62,-.33);
   }else{
   part(.78,.2,.78,ha,0,2.72,0);if(o.long)part(.78,.95,.2,ha,0,2.25,-.33);else part(.78,.3,.16,ha,0,2.55,-.32);if(o.bow)part(.34,.18,.12,m(0xe9c6cf),.28,2.82,-.28);}
   body.scale.setScalar(.66);const tag=nameTag(o.name,o.tag);tag.position.y=2.2;g.add(tag);scene.add(g);
   return{g,legL,legR,armL,armR}}
-const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0x8c2f4a,pants:0x3d2a36,hair:0x24160f,glam:true,tag:"#a8476b"},
+const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xf3ede3,pants:0x1f1c22,hair:0x1d1411,street:true,tag:"#a8476b"},
   Baji:{name:"Baji",skin:0xe9bf98,skinCss:"#e9bf98",shirt:0x41577a,pants:0x2b2026,hair:0x1c1410,tag:"#41577a"}};
 const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
 Object.values(people).forEach(p=>p.g.visible=false);
