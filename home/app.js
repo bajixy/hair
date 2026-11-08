@@ -187,7 +187,6 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
   x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,17,6,.35,Math.PI-.35);x.stroke();x.fillStyle="rgba(200,100,130,.45)";x.fillRect(5,19,4,2);x.fillRect(23,19,4,2);}
   if(o.buff){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);
     const px_=(c,...r)=>{x.fillStyle=c;for(let i=0;i<r.length;i+=4)x.fillRect(r[i],r[i+1],r[i+2],r[i+3])};
-    px_("rgba(70,45,30,.16)",0,26,32,6,6,21,20,5);
     px_("#1c1410",7,9,6,2,19,9,6,2,6,10,1,1,25,10,1,1);
     px_("#fffdf9",9,13,4,3,19,13,4,3);px_("#2b1d14",10,13,3,3,20,13,3,3);px_("#120c0a",11,14,1,1,21,14,1,1);px_("#fffdf9",10,13,1,1,20,13,1,1);
     px_("#d6a982",15,16,2,4,14,19,4,1);
@@ -210,6 +209,12 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
     const fr=part(.8,.14,.16,ha,0,3.2,.37);fr.rotation.x=.3;part(.3,.08,.1,ha,-.18,3.29,.43);
     [-1,1].forEach(sd=>{part(.05,.2,.76,ha,sd*.39,3.04,0);part(.04,.12,.7,fade,sd*.385,2.88,-.01);part(.07,.17,.12,sk,sd*.395,2.76,.04)});
     part(.8,.28,.06,ha,0,3.0,-.4);part(.78,.1,.05,fade,0,2.82,-.395);
+    // glasses: thin black rectangular frames, a bridge, arms back to the ears, a faint lens
+    const fr_=m(0x18161a),lens=new T.MeshLambertMaterial({color:0xdfeaf2,transparent:true,opacity:.18,depthWrite:false});
+    [-1,1].forEach(sd=>{const cx=sd*.118;
+      part(.17,.025,.03,fr_,cx,2.9,.395);part(.17,.025,.03,fr_,cx,2.757,.395);part(.025,.168,.03,fr_,cx-.085,2.828,.395);part(.025,.168,.03,fr_,cx+.085,2.828,.395);
+      part(.15,.12,.01,lens,cx,2.828,.392);part(.025,.03,.4,fr_,sd*.392,2.88,.19)});
+    part(.07,.022,.03,fr_,0,2.86,.395);
   }else if(o.street){
     // wolf cut: volume at the crown, blunt bangs, choppy layers to the shoulders, ears out with piercings
     const silver=new T.MeshLambertMaterial({color:0xd8d8de,emissive:0x2a2a30});
@@ -322,7 +327,7 @@ let mode="walk",camYaw=0,camPitch=.42,camDist=8;let bYaw=.55,bPitch=.62,bDist=24
 function setMode(m){mode=m;document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===m;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false")});
   $("walkUI").hidden=m!=="walk";$("buildUI").hidden=m!=="build";$("nearBtn").hidden=true;keys.clear();joy.x=joy.y=0;
   if(m==="build"){bTarget.set(P.x*.5,2.5,P.z*.5);showHint(touch?"Tap to place · drag to turn · pinch to zoom":"Click to place · right-click to break · drag to turn · scroll to zoom")}
-  else showHint(touch?"Joystick to walk · drag to look around":"WASD to walk · space to jump · drag to look · H for hearts · K to kiss")}
+  else showHint(touch?"Joystick to walk · drag to look around":"WASD to walk · space to jump · F to swing · H for hearts · K to kiss")}
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 let hintT=null;function showHint(t){const h=$("hint");h.textContent=t;h.classList.remove("gone");clearTimeout(hintT);hintT=setTimeout(()=>h.classList.add("gone"),4500)}
 
@@ -367,6 +372,7 @@ addEventListener("keydown",e=>{if(!$("sheet").hidden||!$("enter").hidden||e.targ
   else if(e.code==="Space"&&mode==="walk"){wantJump=true;e.preventDefault()}
   else if(e.code==="KeyH")hearts_();
   else if(e.code==="KeyK")kissNow();
+  else if(e.code==="KeyF"&&mode==="walk")swing();
   else if(e.code==="KeyB")setMode(mode==="walk"?"build":"walk");
   else if(e.code==="KeyE"&&nearId)openLetter(nearId);
   else if(mode==="build"&&/^Digit[1-9]$/.test(e.code)){const n=+e.code.slice(5)-1;if(B[n])choose(n)}
@@ -387,7 +393,7 @@ function blowKiss(from,to){const s=new T.Sprite(new T.SpriteMaterial({map:heartT
   flyers.push({s,from:{x:from.x,y:from.y+1.6,z:from.z},to:{x:to.x,y:to.y+1.6,z:to.z},t0:performance.now(),dur:1300})}
 function beginKiss(at){const M={x:(P.x+at.x)/2,z:(P.z+at.z)/2};let dx=P.x-M.x,dz=P.z-M.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
   let tx=M.x+dx*KISS_GAP/2,tz=M.z+dz*KISS_GAP/2;if(hits(tx,P.y,tz)){tx=P.x;tz=P.z}
-  kiss={t0:performance.now(),sx:P.x,sz:P.z,tx,tz,M,burst:false};keys.clear();joy.x=joy.y=0;knob.style.transform=""}
+  kiss={t0:performance.now(),sx:P.x,sz:P.z,tx,tz,M,burst:false};swordOut=false;keys.clear();joy.x=joy.y=0;knob.style.transform=""}
 function kissPose(now){if(!kiss)return null;const e=(now-kiss.t0)/1000;if(e>2.5){kiss=null;return null}
   const ramp=(t,a,b)=>Math.max(0,Math.min(1,(t-a)/(b-a)));
   if(!kiss.burst&&e>.85){kiss.burst=true;const op=otherPos()||kiss.M,mid={x:(P.x+op.x)/2,y:P.y,z:(P.z+op.z)/2};burst(mid);
@@ -395,13 +401,55 @@ function kissPose(now){if(!kiss)return null;const e=(now-kiss.t0)/1000;if(e>2.5)
     if(Math.hypot(KID.g.position.x-mid.x,KID.g.position.z-mid.z)<5)KID.cheer()}
   return{lean:ramp(e,.4,.8)*(1-ramp(e,1.9,2.3)),hug:ramp(e,.3,.7)*(1-ramp(e,2,2.45))}}
 function pose(p,k){p.body.rotation.x=k?(p.lean||.15)*k.lean:0;p.body.position.y=k?(p.lift||0)*k.lean:0;if(k&&k.hug){p.armL.rotation.x=-1.25*k.hug;p.armR.rotation.x=-1.25*k.hug;p.armL.rotation.z=.4*k.hug;p.armR.rotation.z=-.4*k.hug}else{p.armL.rotation.z=0;p.armR.rotation.z=0}}
-function kissNow(){if(!me||kiss)return;const op=otherPos();if(!op)return;
+function kissNow(){if(!me||kiss||ko)return;const op=otherPos();if(!op)return;
   if(Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR){beginKiss(op);if(net)net.sendEmote("kiss",{x:+P.x.toFixed(2),z:+P.z.toFixed(2)})}
   else{blowKiss(P,op);if(net)net.sendEmote("blow")}buzz()}
 function onKiss(e){if(e.who===me)return;const op=otherPos();
   if(!op){toast(e.who+(e.k==="kiss"?" wants a kiss ♡":" blew you a kiss ♡"));buzz();return}
   if(e.k==="kiss"){if(!kiss)beginKiss({x:e.x??op.x,z:e.z??op.z})}else blowKiss(op,P);buzz()}
 kissBtn.onclick=kissNow;
+// ---------- sword fights: tap the sword to swing; five hearts each; lose them all and you're knocked over for three seconds ----------
+const MAXHP=5,sparks=[],swordBtn=$("swordBtn"),hpBar=$("hpBar");
+let myHp=MAXHP,theirHp=MAXHP,swordOut=false,swingT0=-1e9,theirSwingT0=-1e9,lastFight=-1e9,hurtUntil=0,kb=null,ko=null,theirKO=null,shakeUntil=0,hpKey="";
+const starTex=(()=>{const c=document.createElement("canvas");c.width=c.height=32;const g=c.getContext("2d");g.fillStyle="#fff3c4";g.beginPath();
+  [[16,1],[19.5,12.5],[31,16],[19.5,19.5],[16,31],[12.5,19.5],[1,16],[12.5,12.5]].forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();g.fillStyle="#fff";g.fillRect(14,14,4,4);return new T.CanvasTexture(c)})();
+function sparkle(p){const now=performance.now();for(let i=0;i<9;i++){const s=new T.Sprite(new T.SpriteMaterial({map:starTex,transparent:true,depthTest:false}));s.renderOrder=7;const sc=.16+Math.random()*.2;s.scale.set(sc,sc,1);
+  s.position.set(p.x,p.y+1.15,p.z);scene.add(s);const a=Math.random()*6.28,v=1.4+Math.random()*2;sparks.push({s,vx:Math.cos(a)*v,vy:1+Math.random()*2.4,vz:Math.sin(a)*v,born:now})}}
+function addSword(p,hand,guard){const g=new T.Group(),mt=c=>new T.MeshLambertMaterial({color:c});
+  const bx=(w,h,d,c,x,y,z)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt(c));b.position.set(x,y,z);b.castShadow=true;g.add(b)};
+  bx(.1,.13,1.22,0xdfe3e8,0,0,.78);bx(.112,.045,1.18,0xa9b1bc,0,0,.76);bx(.07,.09,.12,0xdfe3e8,0,0,1.44);
+  bx(.52,.1,.12,guard,0,0,.12);bx(.1,.1,.32,0x5a3a26,0,0,-.08);bx(.15,.15,.12,guard,0,0,-.27);
+  g.position.set(0,-hand,0);g.visible=false;p.armR.add(g);p.sword=g}
+addSword(people.Anujin,.9,0xa8476b);addSword(people.Baji,1.13,0x41577a);
+function flash(p){const ms=[];p.g.traverse(o=>{if(o.isMesh&&o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m.emissive){if(m.userData.e0==null)m.userData.e0=m.emissive.getHex();ms.push(m);m.emissive.setHex(0x8a1020)}})});
+  setTimeout(()=>ms.forEach(m=>m.emissive.setHex(m.userData.e0)),170)}
+function swing(){if(!me||ko||kiss)return;const now=performance.now();if(now-swingT0<450)return;swordOut=true;swingT0=now;lastFight=now;
+  const op=otherPos();let hit=false,dx=0,dz=0;
+  if(op&&!theirKO){const d=Math.hypot(op.x-P.x,op.z-P.z);if(d<3.2&&d>.01){dx=(op.x-P.x)/d;dz=(op.z-P.z)/d;let a=Math.atan2(dx,dz)-P.yaw;a=Math.atan2(Math.sin(a),Math.cos(a));
+    if(Math.abs(a)<1.65){P.yaw+=a;const l=Math.max(0,Math.min(.8,d-1.1));moveAxis("x",dx*l);moveAxis("z",dz*l);hit=Math.hypot(op.x-P.x,op.z-P.z)<2.4}}}
+  if(hit)setTimeout(()=>{const o=people[other(me)];flash(o);sparkle(o.g.position)},120);
+  if(net)net.sendEmote("swing",hit?{hit:1,dx:+dx.toFixed(3),dz:+dz.toFixed(3)}:{});buzz()}
+function onFight(e){if(e.who===me)return;const now=performance.now(),o=people[other(me)];lastFight=now;
+  if(e.k==="swing"){theirSwingT0=now;if(otherState)otherState.sword=true;
+    if(e.hit&&!ko&&now>hurtUntil){myHp=Math.max(0,myHp-1);hurtUntil=now+450;setTimeout(()=>{flash(people[me]);sparkle(P)},120);kb={dx:e.dx||0,dz:e.dz||0,t0:now+120};shakeUntil=now+320;
+      if(navigator.vibrate)try{navigator.vibrate(myHp?40:[60,40,120])}catch(_){}
+      if(myHp<=0){ko={t0:now+150};swordOut=false;setTimeout(()=>toast(other(me)+" wins this round ♡"),350)}
+      if(net)net.sendEmote("hp",{hp:myHp,ko:myHp<=0?1:0})}}
+  else if(e.k==="hp"){theirHp=e.hp;if(e.ko){theirKO={t0:now};setTimeout(()=>{toast("You win this round ♡");burst(o.g.position)},350)}else theirKO=null}}
+function fightTick(now,dt){
+  if(ko&&now-ko.t0>3000){ko=null;myHp=MAXHP;hurtUntil=now+1500;if(net)net.sendEmote("hp",{hp:myHp,ko:0})}
+  if(theirKO&&now-theirKO.t0>4500)theirKO=null;
+  if(swordOut&&now-swingT0>20000)swordOut=false;
+  if(now-lastFight>20000&&!ko){if(myHp<MAXHP){myHp=MAXHP;if(net)net.sendEmote("hp",{hp:myHp,ko:0})}theirHp=MAXHP}
+  const show=!!me&&mode==="walk"&&(now-lastFight<20000||myHp<MAXHP);if(hpBar.hidden===show)hpBar.hidden=!show;
+  if(show){const h=n=>"♥".repeat(n)+"♡".repeat(MAXHP-n),k=myHp+"|"+theirHp;if(k!==hpKey){hpKey=k;hpBar.innerHTML=`<span><b>You</b>${h(myHp)}</span><span><b>${esc(other(me))}</b>${h(theirHp)}</span>`}}
+  for(let i=sparks.length-1;i>=0;i--){const s=sparks[i],a=(now-s.born)/1000;if(a>.6){scene.remove(s.s);sparks.splice(i,1);continue}
+    s.s.position.x+=s.vx*dt;s.s.position.y+=s.vy*dt;s.s.position.z+=s.vz*dt;s.vy-=6*dt;s.s.material.opacity=1-a/.6}}
+function fightPose(p,isMe,now){const out=isMe?(swordOut&&!ko):(!!(otherState&&otherState.sword)&&!theirKO);p.sword.visible=out;
+  if(out&&!(kiss&&kissPose(now))){const u=(now-(isMe?swingT0:theirSwingT0))/340;let th=-.55;
+    if(u>=0&&u<1)th=u<.3?-.55-2.05*(u/.3):-2.6+2.35*Math.pow((u-.3)/.7,.6);p.armR.rotation.x=th;p.armR.rotation.z=0}
+  const k=isMe?ko:theirKO,t=k?Math.max(0,Math.min(1,(now-k.t0)/350)):0,e=t*t*(3-2*t);p.body.rotation.z=-1.5*e;if(k)p.body.rotation.x=0}
+swordBtn.addEventListener("pointerdown",e=>{e.preventDefault();swing()});
 let lastHeart=0;function hearts_(){const now=performance.now();if(now-lastHeart<700)return;lastHeart=now;burst(P);if(net)net.sendEmote("hearts");buzz()}
 $("heartBtn").onclick=hearts_;
 // canvas: drag to turn, pinch to zoom, tap to act
@@ -427,12 +475,12 @@ function chip(){const o=other(me),c=$("chip"),t=$("chipText");c.classList.remove
 setInterval(()=>{if(me)chip()},30000);
 let toastT=null;function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3600)}
 const handlers={
-  pos(p){if(p.who!==other(me))return;otherState=Object.assign(otherState||{x:p.x,y:p.y,z:p.z,yaw:p.yaw},{tx:p.x,ty:p.y,tz:p.z,tyaw:p.yaw,moving:p.m,at:performance.now()});people[p.who].g.visible=true},
+  pos(p){if(p.who!==other(me))return;otherState=Object.assign(otherState||{x:p.x,y:p.y,z:p.z,yaw:p.yaw},{tx:p.x,ty:p.y,tz:p.z,tyaw:p.yaw,moving:p.m,sword:!!p.sw,at:performance.now()});people[p.who].g.visible=true},
   block(b){const k=K(b.x,b.y,b.z);if(b.t==null)world.delete(k);else world.set(k,b.t);rebuild();if(hits(P.x,P.y,P.z))P.y+=1},
   note(n){if(!notes.some(x=>x.id===n.id)){notes.push(n);syncNotes();if(n.author!==me){toast(n.author+" left you a letter ♡");buzz()}}},
   "note-read"(r){const n=notes.find(x=>x.id===r.id);if(n){n.read_at=r.read_at||new Date().toISOString();syncNotes()}},
   "note-del"(r){notes=notes.filter(x=>x.id!==r.id);syncNotes()},
-  emote(e){if(e.k==="kid"){KID.cheer();buzz();return}if(e.k==="kiss"||e.k==="blow"){onKiss(e);return}const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
+  emote(e){if(e.k==="kid"){KID.cheer();buzz();return}if(e.k==="kiss"||e.k==="blow"){onKiss(e);return}if(e.k==="swing"||e.k==="hp"){onFight(e);return}const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
   presence(list){const o=other(me),was=online.has(o);online=new Set(list);
     if(online.has(o)&&!was){toast(o+" just came home ♡");buzz()}
     if(!online.has(o)&&was){seen[o]=new Date().toISOString();people[o].g.visible=false;otherState=null}
@@ -483,7 +531,7 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
   const mine=me&&people[me];
   if(mine){
     let moving=false;
-    if(mode==="walk"&&sheet.hidden&&!kiss){
+    if(mode==="walk"&&sheet.hidden&&!kiss&&!ko){
       let f=(keys.has("f")?1:0)-(keys.has("b")?1:0)-joy.y,s=(keys.has("r")?1:0)-(keys.has("l")?1:0)+joy.x;const m=Math.hypot(f,s);if(m>1){f/=m;s/=m}
       const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),mx=(fx*f-fz*s)*4.6,mz=(fz*f+fx*s)*4.6;
       moveAxis("x",mx*dt);moveAxis("z",mz*dt);moving=Math.hypot(mx,mz)>.3;
@@ -492,6 +540,7 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
     }
     if(kiss){const e=(now-kiss.t0)/1000,a=Math.min(1,e/.5),sm=a*a*(3-2*a);P.x=kiss.sx+(kiss.tx-kiss.sx)*sm;P.z=kiss.sz+(kiss.tz-kiss.sz)*sm;
       const op=otherPos()||kiss.M;let d=Math.atan2(op.x-P.x,op.z-P.z)-P.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));P.yaw+=d*Math.min(1,dt*10);wantJump=false}
+    if(kb&&now>kb.t0&&now-kb.t0<260){moveAxis("x",kb.dx*3*dt);moveAxis("z",kb.dz*3*dt)}if(ko)wantJump=false;
     if(wantJump&&P.ground)P.vy=7.4;wantJump=false;
     P.vy=Math.max(-30,P.vy-24*dt);const dy=P.vy*dt;P.y+=dy;P.ground=false;
     if(hits(P.x,P.y,P.z)){if(dy<0){P.y=Math.ceil(P.y-.5)+.5;P.ground=true}else P.y-=dy;P.vy=0}
@@ -499,26 +548,27 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
     Object.assign(P,{x:Math.max(-13,Math.min(13,P.x)),z:Math.max(-13,Math.min(13,P.z))});
     mine.g.position.set(P.x,P.y,P.z);mine.g.rotation.y=P.yaw;mine.g.visible=true;
     const sw=moving?Math.sin(tt*10)*.7:0;mine.legL.rotation.x=sw;mine.legR.rotation.x=-sw;mine.armL.rotation.x=-sw;mine.armR.rotation.x=sw;
-    pose(mine,kissPose(now));
-    if(net&&connected&&now-lastSend>110){const key=[P.x.toFixed(2),P.y.toFixed(2),P.z.toFixed(2),P.yaw.toFixed(2),moving?1:0].join();
-      if(key!==lastSent||now-lastSend>2500){net.sendPos({who:me,x:+P.x.toFixed(2),y:+P.y.toFixed(2),z:+P.z.toFixed(2),yaw:+P.yaw.toFixed(2),m:moving?1:0});lastSent=key;lastSend=now}}
+    pose(mine,kissPose(now));fightPose(mine,true,now);
+    if(net&&connected&&now-lastSend>110){const key=[P.x.toFixed(2),P.y.toFixed(2),P.z.toFixed(2),P.yaw.toFixed(2),moving?1:0,swordOut?1:0].join();
+      if(key!==lastSent||now-lastSend>2500){net.sendPos({who:me,x:+P.x.toFixed(2),y:+P.y.toFixed(2),z:+P.z.toFixed(2),yaw:+P.yaw.toFixed(2),m:moving?1:0,sw:swordOut&&!ko?1:0});lastSent=key;lastSend=now}}
     // a letter nearby
     let best=null,bd=2.6;notes.forEach(n=>{if(!isUnread(n))return;const d=Math.hypot(n.x-P.x,n.y-(P.y+.6),n.z-P.z);if(d<bd){bd=d;best=n.id}});
     if(best!==nearId){nearId=best;$("nearBtn").hidden=!(best&&mode==="walk")}
   }
   const o=me&&people[other(me)];
   if(o&&otherState&&o.g.visible){const s=otherState,k=Math.min(1,dt*10);s.x+=(s.tx-s.x)*k;s.y+=(s.ty-s.y)*k;s.z+=(s.tz-s.z)*k;let d=s.tyaw-s.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));s.yaw+=d*k;
-    o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw;pose(o,kissPose(now))}
+    o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw;pose(o,kissPose(now));fightPose(o,false,now)}
   if(me){const op=otherPos(),show=!!op;if(kissBtn.hidden===show)kissBtn.hidden=!show;
-    if(op){const near=Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR;if(kissBtn.classList.contains("near")!==near){kissBtn.classList.toggle("near",near);kissBtn.setAttribute("aria-label",near?"Kiss "+other(me):"Blow "+other(me)+" a kiss");
+    if(op){const near=Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR;if(kissBtn.classList.contains("close")!==near){kissBtn.classList.toggle("close",near);kissBtn.setAttribute("aria-label",near?"Kiss "+other(me):"Blow "+other(me)+" a kiss");
       if(near&&!kissHinted&&mode==="walk"){kissHinted=true;toast("Close enough for a kiss ♡")}}}}
   for(let i=flyers.length-1;i>=0;i--){const f=flyers[i],u=(now-f.t0)/f.dur;if(u>=1){scene.remove(f.s);burst({x:f.to.x,y:f.to.y-1.6,z:f.to.z});flyers.splice(i,1);continue}
     f.s.position.set(f.from.x+(f.to.x-f.from.x)*u,f.from.y+(f.to.y-f.from.y)*u+Math.sin(u*Math.PI)*1.2,f.from.z+(f.to.z-f.from.z)*u);const sc=.42+Math.sin(u*Math.PI)*.18;f.s.scale.set(sc,sc,1)}
+  fightTick(now,dt);
   KID.update(dt,tt,now);
   noteObjs.forEach(g=>{const ph=g.userData.phase;g.rotation.y=tt*.8+ph;g.position.y=notes.find(n=>n.id===g.userData.id).y+Math.sin(tt*2+ph)*.08});
   hearts=hearts.filter(h=>{if(now<h.born){h.s.visible=false;return true}h.s.visible=true;const a=(now-h.born)/1000;h.s.position.y+=h.vy*dt;h.s.material.opacity=Math.max(0,1-a/2.2);if(a>2.2){scene.remove(h.s);return false}return true});
   if(!me)bYaw+=dt*.07;
-  if(mode==="walk"&&me){const ty=P.y+1.4,cp=camPitch;camera.position.set(P.x+Math.sin(camYaw)*Math.cos(cp)*camDist,ty+Math.sin(cp)*camDist,P.z+Math.cos(camYaw)*Math.cos(cp)*camDist);camera.lookAt(P.x,ty,P.z)}
+  if(mode==="walk"&&me){const ty=P.y+1.4,cp=camPitch;camera.position.set(P.x+Math.sin(camYaw)*Math.cos(cp)*camDist,ty+Math.sin(cp)*camDist,P.z+Math.cos(camYaw)*Math.cos(cp)*camDist);camera.lookAt(P.x,ty,P.z);if(now<shakeUntil){camera.position.x+=(Math.random()-.5)*.22;camera.position.y+=(Math.random()-.5)*.16}}
   else{camera.position.set(bTarget.x+Math.sin(bYaw)*Math.cos(bPitch)*bDist,bTarget.y+Math.sin(bPitch)*bDist,bTarget.z+Math.cos(bYaw)*Math.cos(bPitch)*bDist);camera.lookAt(bTarget)}
   renderer.render(scene,camera)}
 function size(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(w<520)bDist=Math.max(bDist,30)}
