@@ -73,6 +73,10 @@ button{-webkit-user-select:none;user-select:none;cursor:pointer}
 .round{width:66px;height:66px;border-radius:50%;border:1px solid rgba(236,220,178,.95);background:rgba(255,253,249,.3);color:#fffdf9;font-family:var(--f-sans);font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;text-shadow:0 1px 3px rgba(40,20,30,.5);display:flex;align-items:center;justify-content:center;padding:0}
 .round.heart{width:54px;height:54px;background:var(--paper);border-color:var(--edge);color:var(--rose);text-shadow:none}
 .round.heart svg{width:24px;height:24px}
+.round.kiss{color:var(--wine)}
+.round.kiss.near{background:var(--wine);border-color:var(--wine);color:#fdf3e4;animation:kissPulse 1.6s ease-in-out infinite}
+.round.kiss.near svg path:last-child{stroke:var(--wine)}
+@keyframes kissPulse{50%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(140,47,74,.18)}}
 .no-touch .joy,.no-touch .walk-r .jump{display:none}
 .no-touch .walk-r{bottom:calc(var(--sab) + 26px)}
 
@@ -169,6 +173,7 @@ textarea:focus{border-color:var(--wine)}
   <div id="walkUI">
     <div class="joy" id="joy"><i></i></div>
     <div class="walk-r">
+      <button class="round heart kiss" type="button" id="kissBtn" aria-label="Kiss" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.5 12.2c2.1-3.3 4.7-5.2 6.7-5.2 1.2 0 2.1.6 2.8 1.4.7-.8 1.6-1.4 2.8-1.4 2 0 4.6 1.9 6.7 5.2-2.4 3.4-5.6 5.4-9.5 5.4s-7.1-2-9.5-5.4z"/><path d="M4 12.3c2.6.9 5.3 1.3 8 1.3s5.4-.4 8-1.3" fill="none" stroke="var(--mount)" stroke-width="1.1" stroke-linecap="round"/></svg></button>
       <button class="round heart" type="button" id="heartBtn" aria-label="Send hearts"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg></button>
       <button class="round jump" type="button" id="jumpBtn">Jump</button>
     </div>

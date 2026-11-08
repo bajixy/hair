@@ -82,7 +82,7 @@ function SupaNet(){
       ["pos","block","note","note-read","note-del","emote"].forEach(ev=>ch.on("broadcast",{event:ev},({payload})=>h[ev]&&h[ev](payload)));
       ch.on("presence",{event:"sync"},()=>h.presence(Object.keys(ch.presenceState())));
       ch.subscribe(async st=>{h.status(st);if(st==="SUBSCRIBED"){try{await ch.track({who:W,at:Date.now()})}catch(_){}}})},
-    sendPos:p=>send("pos",p), sendEmote:k=>send("emote",{who:W,k}),
+    sendPos:p=>send("pos",p), sendEmote:(k,extra)=>send("emote",Object.assign({who:W,k},extra||{})),
     leave(){if(ch){sb.removeChannel(ch);ch=null}}
   };
 }
@@ -105,7 +105,7 @@ function DemoNet(){
     async delNote(id){const st=load();st.notes=st.notes.filter(n=>n.id!==id);save(st);post("note-del",{id})},
     touch(){const st=load();st.seen[W]=new Date().toISOString();save(st)},
     live(_c,handlers){h=handlers;h.status("SUBSCRIBED");post("here");clearInterval(hb);hb=setInterval(()=>{post("here");h.presence(online())},2000);h.presence(online());addEventListener("pagehide",()=>post("bye"))},
-    sendPos:p=>post("pos",p), sendEmote:k=>post("emote",{who:W,k}), leave(){post("bye");clearInterval(hb)}
+    sendPos:p=>post("pos",p), sendEmote:(k,extra)=>post("emote",Object.assign({who:W,k},extra||{})), leave(){post("bye");clearInterval(hb)}
   };
 }
 const net=DEMO?DemoNet():(CONFIG.url&&CONFIG.key&&window.supabase?SupaNet():null);
@@ -194,7 +194,7 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
   }else{
   part(.78,.2,.78,ha,0,2.72,0);if(o.long)part(.78,.95,.2,ha,0,2.25,-.33);else part(.78,.3,.16,ha,0,2.55,-.32);if(o.bow)part(.34,.18,.12,m(0xe9c6cf),.28,2.82,-.28);}
   body.scale.setScalar(.66);const tag=nameTag(o.name,o.tag);tag.position.y=2.2;g.add(tag);scene.add(g);
-  return{g,legL,legR,armL,armR}}
+  return{g,body,legL,legR,armL,armR}}
 const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xc9b8e6,pants:0x1f1c22,hair:0x1d1411,street:true,tag:"#a8476b"},
   Baji:{name:"Baji",skin:0xe9bf98,skinCss:"#e9bf98",shirt:0x41577a,pants:0x2b2026,hair:0x1c1410,tag:"#41577a"}};
 const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
@@ -288,7 +288,7 @@ let mode="walk",camYaw=0,camPitch=.42,camDist=8;let bYaw=.55,bPitch=.62,bDist=24
 function setMode(m){mode=m;document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===m;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false")});
   $("walkUI").hidden=m!=="walk";$("buildUI").hidden=m!=="build";$("nearBtn").hidden=true;keys.clear();joy.x=joy.y=0;
   if(m==="build"){bTarget.set(P.x*.5,2.5,P.z*.5);showHint(touch?"Tap to place · drag to turn · pinch to zoom":"Click to place · right-click to break · drag to turn · scroll to zoom")}
-  else showHint(touch?"Joystick to walk · drag to look around":"WASD to walk · space to jump · drag to look · H for hearts")}
+  else showHint(touch?"Joystick to walk · drag to look around":"WASD to walk · space to jump · drag to look · H for hearts · K to kiss")}
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 let hintT=null;function showHint(t){const h=$("hint");h.textContent=t;h.classList.remove("gone");clearTimeout(hintT);hintT=setTimeout(()=>h.classList.add("gone"),4500)}
 
@@ -332,6 +332,7 @@ addEventListener("keydown",e=>{if(!$("sheet").hidden||!$("enter").hidden||e.targ
   if(KEYS[e.code]&&mode==="walk"){keys.add(KEYS[e.code]);e.preventDefault()}
   else if(e.code==="Space"&&mode==="walk"){wantJump=true;e.preventDefault()}
   else if(e.code==="KeyH")hearts_();
+  else if(e.code==="KeyK")kissNow();
   else if(e.code==="KeyB")setMode(mode==="walk"?"build":"walk");
   else if(e.code==="KeyE"&&nearId)openLetter(nearId);
   else if(mode==="build"&&/^Digit[1-9]$/.test(e.code)){const n=+e.code.slice(5)-1;if(B[n])choose(n)}
@@ -345,6 +346,28 @@ joyEl.addEventListener("pointermove",e=>{if(e.pointerId===joy.id)joyMove(e)});
 const joyEnd=e=>{if(e.pointerId!==joy.id)return;joy.id=null;joy.x=joy.y=0;knob.style.transform=""};
 joyEl.addEventListener("pointerup",joyEnd);joyEl.addEventListener("pointercancel",joyEnd);
 $("jumpBtn").addEventListener("pointerdown",e=>{e.preventDefault();wantJump=true});
+// ---------- kisses: close together you kiss (both of you lean in), further apart you blow one ----------
+const KISS_NEAR=2.6,KISS_GAP=.95,flyers=[],kissBtn=$("kissBtn");let kiss=null,kissHinted=false;
+function otherPos(){const o=me&&people[other(me)];return o&&o.g.visible&&otherState?{x:otherState.x,y:otherState.y,z:otherState.z}:null}
+function blowKiss(from,to){const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true,depthTest:false}));s.renderOrder=6;s.scale.set(.42,.42,1);scene.add(s);
+  flyers.push({s,from:{x:from.x,y:from.y+1.6,z:from.z},to:{x:to.x,y:to.y+1.6,z:to.z},t0:performance.now(),dur:1300})}
+function beginKiss(at){const M={x:(P.x+at.x)/2,z:(P.z+at.z)/2};let dx=P.x-M.x,dz=P.z-M.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
+  let tx=M.x+dx*KISS_GAP/2,tz=M.z+dz*KISS_GAP/2;if(hits(tx,P.y,tz)){tx=P.x;tz=P.z}
+  kiss={t0:performance.now(),sx:P.x,sz:P.z,tx,tz,M,burst:false};keys.clear();joy.x=joy.y=0;knob.style.transform=""}
+function kissPose(now){if(!kiss)return null;const e=(now-kiss.t0)/1000;if(e>2.5){kiss=null;return null}
+  const ramp=(t,a,b)=>Math.max(0,Math.min(1,(t-a)/(b-a)));
+  if(!kiss.burst&&e>.85){kiss.burst=true;const op=otherPos()||kiss.M,mid={x:(P.x+op.x)/2,y:P.y,z:(P.z+op.z)/2};burst(mid);
+    const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true,depthTest:false}));s.renderOrder=6;s.scale.set(.7,.7,1);s.position.set(mid.x,mid.y+1.85,mid.z);scene.add(s);hearts.push({s,vy:.45,born:now});
+    if(Math.hypot(KID.g.position.x-mid.x,KID.g.position.z-mid.z)<5)KID.cheer()}
+  return{lean:ramp(e,.4,.8)*(1-ramp(e,1.9,2.3)),hug:ramp(e,.3,.7)*(1-ramp(e,2,2.45))}}
+function pose(p,k){p.body.rotation.x=k?.15*k.lean:0;if(k&&k.hug){p.armL.rotation.x=-1.25*k.hug;p.armR.rotation.x=-1.25*k.hug;p.armL.rotation.z=.4*k.hug;p.armR.rotation.z=-.4*k.hug}else{p.armL.rotation.z=0;p.armR.rotation.z=0}}
+function kissNow(){if(!me||kiss)return;const op=otherPos();if(!op)return;
+  if(Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR){beginKiss(op);if(net)net.sendEmote("kiss",{x:+P.x.toFixed(2),z:+P.z.toFixed(2)})}
+  else{blowKiss(P,op);if(net)net.sendEmote("blow")}buzz()}
+function onKiss(e){if(e.who===me)return;const op=otherPos();
+  if(!op){toast(e.who+(e.k==="kiss"?" wants a kiss ♡":" blew you a kiss ♡"));buzz();return}
+  if(e.k==="kiss"){if(!kiss)beginKiss({x:e.x??op.x,z:e.z??op.z})}else blowKiss(op,P);buzz()}
+kissBtn.onclick=kissNow;
 let lastHeart=0;function hearts_(){const now=performance.now();if(now-lastHeart<700)return;lastHeart=now;burst(P);if(net)net.sendEmote("hearts");buzz()}
 $("heartBtn").onclick=hearts_;
 // canvas: drag to turn, pinch to zoom, tap to act
@@ -375,7 +398,7 @@ const handlers={
   note(n){if(!notes.some(x=>x.id===n.id)){notes.push(n);syncNotes();if(n.author!==me){toast(n.author+" left you a letter ♡");buzz()}}},
   "note-read"(r){const n=notes.find(x=>x.id===r.id);if(n){n.read_at=r.read_at||new Date().toISOString();syncNotes()}},
   "note-del"(r){notes=notes.filter(x=>x.id!==r.id);syncNotes()},
-  emote(e){if(e.k==="kid"){KID.cheer();buzz();return}const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
+  emote(e){if(e.k==="kid"){KID.cheer();buzz();return}if(e.k==="kiss"||e.k==="blow"){onKiss(e);return}const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
   presence(list){const o=other(me),was=online.has(o);online=new Set(list);
     if(online.has(o)&&!was){toast(o+" just came home ♡");buzz()}
     if(!online.has(o)&&was){seen[o]=new Date().toISOString();people[o].g.visible=false;otherState=null}
@@ -426,13 +449,15 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
   const mine=me&&people[me];
   if(mine){
     let moving=false;
-    if(mode==="walk"&&sheet.hidden){
+    if(mode==="walk"&&sheet.hidden&&!kiss){
       let f=(keys.has("f")?1:0)-(keys.has("b")?1:0)-joy.y,s=(keys.has("r")?1:0)-(keys.has("l")?1:0)+joy.x;const m=Math.hypot(f,s);if(m>1){f/=m;s/=m}
       const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),mx=(fx*f-fz*s)*4.6,mz=(fz*f+fx*s)*4.6;
       moveAxis("x",mx*dt);moveAxis("z",mz*dt);moving=Math.hypot(mx,mz)>.3;
       if(moving){let d=Math.atan2(mx,mz)-P.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));P.yaw+=d*Math.min(1,dt*12);
         if(now-lastLook>900){let c=(P.yaw+Math.PI)-camYaw;c=Math.atan2(Math.sin(c),Math.cos(c));camYaw+=c*dt*1.4*Math.min(1,Math.abs(f)+.2)}}
     }
+    if(kiss){const e=(now-kiss.t0)/1000,a=Math.min(1,e/.5),sm=a*a*(3-2*a);P.x=kiss.sx+(kiss.tx-kiss.sx)*sm;P.z=kiss.sz+(kiss.tz-kiss.sz)*sm;
+      const op=otherPos()||kiss.M;let d=Math.atan2(op.x-P.x,op.z-P.z)-P.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));P.yaw+=d*Math.min(1,dt*10);wantJump=false}
     if(wantJump&&P.ground)P.vy=7.4;wantJump=false;
     P.vy=Math.max(-30,P.vy-24*dt);const dy=P.vy*dt;P.y+=dy;P.ground=false;
     if(hits(P.x,P.y,P.z)){if(dy<0){P.y=Math.ceil(P.y-.5)+.5;P.ground=true}else P.y-=dy;P.vy=0}
@@ -440,6 +465,7 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
     Object.assign(P,{x:Math.max(-13,Math.min(13,P.x)),z:Math.max(-13,Math.min(13,P.z))});
     mine.g.position.set(P.x,P.y,P.z);mine.g.rotation.y=P.yaw;mine.g.visible=true;
     const sw=moving?Math.sin(tt*10)*.7:0;mine.legL.rotation.x=sw;mine.legR.rotation.x=-sw;mine.armL.rotation.x=-sw;mine.armR.rotation.x=sw;
+    pose(mine,kissPose(now));
     if(net&&connected&&now-lastSend>110){const key=[P.x.toFixed(2),P.y.toFixed(2),P.z.toFixed(2),P.yaw.toFixed(2),moving?1:0].join();
       if(key!==lastSent||now-lastSend>2500){net.sendPos({who:me,x:+P.x.toFixed(2),y:+P.y.toFixed(2),z:+P.z.toFixed(2),yaw:+P.yaw.toFixed(2),m:moving?1:0});lastSent=key;lastSend=now}}
     // a letter nearby
@@ -448,7 +474,12 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
   }
   const o=me&&people[other(me)];
   if(o&&otherState&&o.g.visible){const s=otherState,k=Math.min(1,dt*10);s.x+=(s.tx-s.x)*k;s.y+=(s.ty-s.y)*k;s.z+=(s.tz-s.z)*k;let d=s.tyaw-s.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));s.yaw+=d*k;
-    o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw}
+    o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw;pose(o,kissPose(now))}
+  if(me){const op=otherPos(),show=!!op;if(kissBtn.hidden===show)kissBtn.hidden=!show;
+    if(op){const near=Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR;if(kissBtn.classList.contains("near")!==near){kissBtn.classList.toggle("near",near);kissBtn.setAttribute("aria-label",near?"Kiss "+other(me):"Blow "+other(me)+" a kiss");
+      if(near&&!kissHinted&&mode==="walk"){kissHinted=true;toast("Close enough for a kiss ♡")}}}}
+  for(let i=flyers.length-1;i>=0;i--){const f=flyers[i],u=(now-f.t0)/f.dur;if(u>=1){scene.remove(f.s);burst({x:f.to.x,y:f.to.y-1.6,z:f.to.z});flyers.splice(i,1);continue}
+    f.s.position.set(f.from.x+(f.to.x-f.from.x)*u,f.from.y+(f.to.y-f.from.y)*u+Math.sin(u*Math.PI)*1.2,f.from.z+(f.to.z-f.from.z)*u);const sc=.42+Math.sin(u*Math.PI)*.18;f.s.scale.set(sc,sc,1)}
   KID.update(dt,tt,now);
   noteObjs.forEach(g=>{const ph=g.userData.phase;g.rotation.y=tt*.8+ph;g.position.y=notes.find(n=>n.id===g.userData.id).y+Math.sin(tt*2+ph)*.08});
   hearts=hearts.filter(h=>{if(now<h.born){h.s.visible=false;return true}h.s.visible=true;const a=(now-h.born)/1000;h.s.position.y+=h.vy*dt;h.s.material.opacity=Math.max(0,1-a/2.2);if(a>2.2){scene.remove(h.s);return false}return true});
