@@ -138,7 +138,25 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
   const part=(w,h,d,mt,x,y,z,p=body)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt);b.position.set(x,y,z);b.castShadow=true;p.add(b);return b};
   const limb=(mt,x,y,len,w)=>{const p=new T.Group();p.position.set(x,y,0);body.add(p);part(w,len,w,mt,0,-len/2,0,p);return p};
   let legL,legR,armL,armR;
-  if(o.street){
+  if(o.buff){
+    // Baji: a fitted black tee on a broad chest, chain and watch, light-wash baggy jeans, clean white sneakers
+    const tee=m(0x1f1f24),tee2=m(0x2a2a31),denim=m(0x8da2bd),denim2=m(0x7a8faa),white=m(0xf4f2ee),gum=m(0xd9d4cc),blk=m(0x141418),
+      silver=new T.MeshLambertMaterial({color:0xd8d8de,emissive:0x2a2a30});
+    const leg=sd=>{const p=new T.Group();p.position.set(sd*.25,1.12,0);body.add(p);
+      part(.48,.98,.5,denim,0,-.49,0,p);part(.06,.3,.3,denim2,sd*.25,-.42,.02,p);part(.5,.08,.52,denim2,0,-.94,0,p);
+      part(.46,.18,.62,white,0,-1.03,.06,p);part(.48,.06,.64,gum,0,-1.09,.06,p);part(.02,.07,.26,blk,sd*.235,-1.02,.06,p);part(.28,.03,.22,m(0xdedbd6),0,-.935,.2,p);return p};
+    legL=leg(-1);legR=leg(1);
+    part(1,.1,.56,blk,0,1.17,0);part(.14,.09,.04,silver,0,1.17,.29);
+    part(.92,.4,.52,tee,0,1.42,0);
+    part(1.22,.62,.6,tee,0,1.92,0);part(.46,.22,.05,tee2,-.26,2.02,.31);part(.46,.22,.05,tee2,.26,2.02,.31);
+    part(.34,.3,.54,tee,-.68,2.08,0);part(.34,.3,.54,tee,.68,2.08,0);
+    part(.42,.2,.4,sk,0,2.3,0);part(.3,.08,.04,sk,0,2.2,.3);
+    part(.46,.03,.44,silver,0,2.22,0);part(.06,.09,.03,silver,0,2.1,.32);
+    const arm=(sd,watch)=>{const p=new T.Group();p.position.set(sd*.8,2.16,0);body.add(p);
+      part(.52,.34,.52,tee,0,-.17,0,p);part(.5,.32,.5,sk,0,-.5,0,p);part(.44,.42,.44,sk,0,-.86,0,p);part(.4,.18,.42,sk,0,-1.13,.01,p);
+      if(watch){part(.47,.09,.47,blk,0,-.98,0,p);part(.03,.12,.14,silver,sd*.25,-.98,0,p)}return p};
+    armL=arm(-1,true);armR=arm(1,false);
+  }else if(o.street){
     // Anujin: lavender cropped baby tee, black baggy cargos with a chain, all-black Docs, tattooed arms
     const tee=m(0xc9b8e6),cargo=m(0x1f1c22),cargo2=m(0x2b2730),boot=m(0x141016),sole=m(0x0b0809),stitch=m(0x2e2a31),
       silver=new T.MeshLambertMaterial({color:0xd8d8de,emissive:0x2a2a30});
@@ -165,8 +183,16 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
     legL=limb(pa,-.24,.95,.95,.46);legR=limb(pa,.24,.95,.95,.46);part(1.02,1,.52,sh,0,1.45,0);
     armL=limb(sh,-.73,1.92,.95,.42);armR=limb(sh,.73,1.92,.95,.42);part(.42,.2,.42,sk,0,-.92,0,armL);part(.42,.2,.42,sk,0,-.92,0,armR);
   }
-  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");if(!o.street){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);
+  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");if(!o.street&&!o.buff){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);
   x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,17,6,.35,Math.PI-.35);x.stroke();x.fillStyle="rgba(200,100,130,.45)";x.fillRect(5,19,4,2);x.fillRect(23,19,4,2);}
+  if(o.buff){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);
+    const px_=(c,...r)=>{x.fillStyle=c;for(let i=0;i<r.length;i+=4)x.fillRect(r[i],r[i+1],r[i+2],r[i+3])};
+    px_("rgba(70,45,30,.16)",0,26,32,6,6,21,20,5);
+    px_("#1c1410",7,9,6,2,19,9,6,2,6,10,1,1,25,10,1,1);
+    px_("#fffdf9",9,13,4,3,19,13,4,3);px_("#2b1d14",10,13,3,3,20,13,3,3);px_("#120c0a",11,14,1,1,21,14,1,1);px_("#fffdf9",10,13,1,1,20,13,1,1);
+    px_("#d6a982",15,16,2,4,14,19,4,1);
+    px_("#5a2f2a",12,22,8,1,20,21,1,1);px_("#a86a5a",13,23,6,1);
+  }
   if(o.street){x.fillStyle="#f1c9a5";x.fillRect(0,0,32,32);
     const px_=(c,...r)=>{x.fillStyle=c;for(let i=0;i<r.length;i+=4)x.fillRect(r[i],r[i+1],r[i+2],r[i+3])};
     px_("#3a2418",9,12,4,5,19,12,4,5);px_("#1a1014",10,13,2,3,20,13,2,3);px_("#fffdf9",10,13,1,1,20,13,1,1,12,15,1,1,22,15,1,1);
@@ -176,8 +202,15 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
   }
 
   const ft=new T.CanvasTexture(c);ft.magFilter=T.NearestFilter;
-  const head=new T.Mesh(new T.BoxGeometry(.72,.72,.72),[sk,sk,sk,sk,new T.MeshLambertMaterial({map:ft}),sk]);head.position.y=2.32;head.castShadow=true;body.add(head);
-  if(o.street){
+  const hs=o.headS||.72,head=new T.Mesh(new T.BoxGeometry(hs,hs,hs),[sk,sk,sk,sk,new T.MeshLambertMaterial({map:ft}),sk]);head.position.y=o.headY||2.32;head.castShadow=true;body.add(head);
+  if(o.buff){
+    // textured crop: volume and a lifted fringe on top, a tight fade on the sides
+    const fade=m(0x4a3a32);
+    part(.82,.2,.82,ha,0,3.2,0);part(.6,.1,.56,ha,.04,3.33,.04);part(.22,.08,.22,ha,-.2,3.34,-.14);part(.18,.07,.2,ha,.24,3.32,.18);
+    const fr=part(.8,.14,.16,ha,0,3.2,.37);fr.rotation.x=.3;part(.3,.08,.1,ha,-.18,3.29,.43);
+    [-1,1].forEach(sd=>{part(.05,.2,.76,ha,sd*.39,3.04,0);part(.04,.12,.7,fade,sd*.385,2.88,-.01);part(.07,.17,.12,sk,sd*.395,2.76,.04)});
+    part(.8,.28,.06,ha,0,3.0,-.4);part(.78,.1,.05,fade,0,2.82,-.395);
+  }else if(o.street){
     // wolf cut: volume at the crown, blunt bangs, choppy layers to the shoulders, ears out with piercings
     const silver=new T.MeshLambertMaterial({color:0xd8d8de,emissive:0x2a2a30});
     part(.82,.2,.82,ha,0,2.75,0);part(.62,.08,.6,ha,-.04,2.88,-.04);part(.3,.06,.3,ha,.14,2.94,.06);
@@ -193,12 +226,13 @@ function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const go
     part(.14,.16,.12,ha,-.25,1.6,-.33);part(.12,.2,.12,ha,.06,1.56,-.34);part(.14,.12,.12,ha,.27,1.62,-.33);
   }else{
   part(.78,.2,.78,ha,0,2.72,0);if(o.long)part(.78,.95,.2,ha,0,2.25,-.33);else part(.78,.3,.16,ha,0,2.55,-.32);if(o.bow)part(.34,.18,.12,m(0xe9c6cf),.28,2.82,-.28);}
-  body.scale.setScalar(.66);const tag=nameTag(o.name,o.tag);tag.position.y=2.2;g.add(tag);scene.add(g);
+  body.scale.setScalar(o.scale||.66);const tag=nameTag(o.name,o.tag);tag.position.y=o.tagY||2.2;g.add(tag);scene.add(g);
   return{g,body,legL,legR,armL,armR}}
 const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xc9b8e6,pants:0x1f1c22,hair:0x1d1411,street:true,tag:"#a8476b"},
-  Baji:{name:"Baji",skin:0xe9bf98,skinCss:"#e9bf98",shirt:0x41577a,pants:0x2b2026,hair:0x1c1410,tag:"#41577a"}};
+  Baji:{name:"Baji",skin:0xe9bf98,skinCss:"#e9bf98",shirt:0x1f1f24,pants:0x8da2bd,hair:0x1c1410,buff:true,scale:.63,headY:2.78,headS:.76,tagY:2.38,tag:"#41577a"}};
 const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
 Object.values(people).forEach(p=>p.g.visible=false);
+people.Baji.lean=.24;people.Anujin.lean=.13;people.Anujin.lift=.12; // he leans down, she goes up on her toes
 
 // our little girl: twin tails, a purple dress. Her walk is timed by the clock, so she's in the same spot on both phones; tap her for a hop and hearts
 const KID=(function(){
@@ -360,7 +394,7 @@ function kissPose(now){if(!kiss)return null;const e=(now-kiss.t0)/1000;if(e>2.5)
     const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true,depthTest:false}));s.renderOrder=6;s.scale.set(.7,.7,1);s.position.set(mid.x,mid.y+1.85,mid.z);scene.add(s);hearts.push({s,vy:.45,born:now});
     if(Math.hypot(KID.g.position.x-mid.x,KID.g.position.z-mid.z)<5)KID.cheer()}
   return{lean:ramp(e,.4,.8)*(1-ramp(e,1.9,2.3)),hug:ramp(e,.3,.7)*(1-ramp(e,2,2.45))}}
-function pose(p,k){p.body.rotation.x=k?.15*k.lean:0;if(k&&k.hug){p.armL.rotation.x=-1.25*k.hug;p.armR.rotation.x=-1.25*k.hug;p.armL.rotation.z=.4*k.hug;p.armR.rotation.z=-.4*k.hug}else{p.armL.rotation.z=0;p.armR.rotation.z=0}}
+function pose(p,k){p.body.rotation.x=k?(p.lean||.15)*k.lean:0;p.body.position.y=k?(p.lift||0)*k.lean:0;if(k&&k.hug){p.armL.rotation.x=-1.25*k.hug;p.armR.rotation.x=-1.25*k.hug;p.armL.rotation.z=.4*k.hug;p.armR.rotation.z=-.4*k.hug}else{p.armL.rotation.z=0;p.armR.rotation.z=0}}
 function kissNow(){if(!me||kiss)return;const op=otherPos();if(!op)return;
   if(Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR){beginKiss(op);if(net)net.sendEmote("kiss",{x:+P.x.toFixed(2),z:+P.z.toFixed(2)})}
   else{blowKiss(P,op);if(net)net.sendEmote("blow")}buzz()}
