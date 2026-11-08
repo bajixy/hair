@@ -3,7 +3,7 @@
    live movement, hearts and new blocks travel over a realtime channel whose name only the word unlocks. */
 (function(){
 "use strict";
-const CONFIG={url:"",key:""}; // filled in once the database is set up
+const CONFIG={url:"https://rnagnimphpekwiigxcup.supabase.co",key:""}; // key goes in once the database is set up
 const DEMO=new URLSearchParams(location.search).has("demo");
 const $=id=>document.getElementById(id);
 const store={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}},del:k=>{try{localStorage.removeItem(k)}catch(_){}}};
@@ -108,7 +108,7 @@ function DemoNet(){
     sendPos:p=>post("pos",p), sendEmote:k=>post("emote",{who:W,k}), leave(){post("bye");clearInterval(hb)}
   };
 }
-const net=DEMO?DemoNet():(CONFIG.url&&window.supabase?SupaNet():null);
+const net=DEMO?DemoNet():(CONFIG.url&&CONFIG.key&&window.supabase?SupaNet():null);
 
 // ---------- scene ----------
 const T=THREE, cv=$("cv"), app=$("app");
@@ -151,6 +151,57 @@ const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xa8476b
 const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
 Object.values(people).forEach(p=>p.g.visible=false);
 
+// our little girl: twin tails, a sunny dress. Her walk is timed by the clock, so she's in the same spot on both phones; tap her for a hop and hearts
+const KID=(function(){
+  const g=new T.Group(),body=new T.Group();g.add(body);
+  const m=c=>new T.MeshLambertMaterial({color:c}),sk=m(0xf3cfae),dress=m(0xf2c76e),skirt=m(0xe9b85a),collar=m(0xfffdf9),tights=m(0xfaf6ef),shoe=m(0x8c2f4a),hair=m(0x2b1d18),bow=m(0xa8476b);
+  const part=(w,h,d,mt,x,y,z,p=body)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt);b.position.set(x,y,z);b.castShadow=true;p.add(b);return b};
+  const limb=(mt,x,y,len,w,end)=>{const p=new T.Group();p.position.set(x,y,0);body.add(p);part(w,len,w,mt,0,-len/2,0,p);if(end)part(w+.03,.15,w+.08,end,0,-len+.07,.03,p);return p};
+  const legL=limb(tights,-.17,.62,.62,.3,shoe),legR=limb(tights,.17,.62,.62,.3,shoe);
+  part(1,.36,.68,skirt,0,.62,0);part(.78,.5,.46,dress,0,1.02,0);part(.8,.08,.48,collar,0,1.26,0);
+  const armL=limb(dress,-.52,1.22,.5,.26,sk),armR=limb(dress,.52,1.22,.5,.26,sk);
+  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");x.fillStyle="#f3cfae";x.fillRect(0,0,32,32);
+  x.fillStyle="#2b2026";x.fillRect(8,13,5,7);x.fillRect(19,13,5,7);x.fillStyle="#fffdf9";x.fillRect(9,14,2,2);x.fillRect(20,14,2,2);
+  x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,21,4,.4,Math.PI-.4);x.stroke();x.fillStyle="rgba(214,110,140,.55)";x.fillRect(3,21,5,3);x.fillRect(24,21,5,3);
+  const ft=new T.CanvasTexture(c);ft.magFilter=T.NearestFilter;
+  const head=new T.Mesh(new T.BoxGeometry(.8,.8,.8),[sk,sk,sk,sk,new T.MeshLambertMaterial({map:ft}),sk]);head.position.y=1.7;head.castShadow=true;body.add(head);
+  part(.86,.2,.86,hair,0,2.12,0);part(.86,.66,.18,hair,0,1.82,-.36);part(.86,.14,.07,hair,0,2.0,.42);
+  part(.08,.3,.5,hair,-.42,1.88,.08);part(.08,.3,.5,hair,.42,1.88,.08);
+  const tails=[-1,1].map(sd=>{const t=new T.Group();t.position.set(sd*.47,1.98,-.08);body.add(t);
+    part(.3,.16,.12,bow,0,.02,0,t);part(.14,.14,.16,bow,0,.02,0,t);
+    part(.26,.5,.26,hair,0,-.3,0,t);part(.2,.22,.2,hair,0,-.62,0,t);t.userData.sd=sd;return t});
+  body.scale.setScalar(.6);
+  const hit=new T.Mesh(new T.BoxGeometry(1,1.5,1),new T.MeshBasicMaterial({visible:false}));hit.position.y=.75;g.add(hit);
+  scene.add(g);
+
+  // her loop: [x, z, seconds she stops there]
+  const R=[[0,8,3],[0,4.4],[0,1.8],[1.4,-1.2,4],[0,1.8],[0,4.4],[0,7],[5.5,7],[6,-4.4,4],[2,-7.5],[-6.5,-6.5,3],[-7,4],[-4,8]],SPEED=1.5;
+  const segs=[];let period=0;
+  R.forEach((a,i)=>{const b=R[(i+1)%R.length];if(a[2]){segs.push({t0:period,d:a[2],a,b:a,stop:true});period+=a[2]}
+    const d=Math.hypot(b[0]-a[0],b[1]-a[1])/SPEED;segs.push({t0:period,d,a,b});period+=d});
+  function where(sec){const u=((sec%period)+period)%period;let s=segs[segs.length-1];for(const x of segs)if(u>=x.t0&&u<x.t0+x.d){s=x;break}
+    const k=s.stop?0:(u-s.t0)/s.d;return{x:s.a[0]+(s.b[0]-s.a[0])*k,z:s.a[1]+(s.b[1]-s.a[1])*k,moving:!s.stop,yaw:s.stop?null:Math.atan2(s.b[0]-s.a[0],s.b[1]-s.a[1])}}
+  function standAt(px_,pz){const cx=Math.round(px_),cz=Math.round(pz);let y=1;while(y<22&&solidAt(cx,y,cz))y++;return y-.5}
+  let yaw=Math.PI,ky=.5,hopAt=-1e9,ready=false;
+  function update(dt,tt,now){
+    const w=where(Date.now()/1000),gy=standAt(w.x,w.z);
+    if(!ready){ky=gy;ready=true}ky+=(gy-ky)*Math.min(1,dt*10);
+    const hopT=(now-hopAt)/1000,hop=hopT<.55?Math.sin(hopT/.55*Math.PI)*.7:0;
+    g.position.set(w.x,ky+hop,w.z);
+    // she turns to whoever is closest when she stops, and waves at you when you're right by her
+    let look=w.yaw,near=null,nd=4.5;
+    Object.values(people).forEach(p=>{if(!p.g.visible)return;const d=Math.hypot(p.g.position.x-w.x,p.g.position.z-w.z);if(d<nd){nd=d;near=p}});
+    if(look==null)look=near?Math.atan2(near.g.position.x-w.x,near.g.position.z-w.z):yaw;
+    let d=look-yaw;d=Math.atan2(Math.sin(d),Math.cos(d));yaw+=d*Math.min(1,dt*6);g.rotation.y=yaw;
+    const sw=w.moving?Math.sin(tt*12)*.75:0;legL.rotation.x=sw;legR.rotation.x=-sw;armL.rotation.x=-sw*.8;
+    const mine=me&&people[me],close=mine&&mine.g.visible&&Math.hypot(mine.g.position.x-w.x,mine.g.position.z-w.z)<2.6;
+    if(close||hop){armR.rotation.x=0;armR.rotation.z=2.6+Math.sin(tt*9)*.4}else{armR.rotation.z=0;armR.rotation.x=sw*.8}
+    if(hop){armL.rotation.x=0;armL.rotation.z=-2.6}else armL.rotation.z=0;
+    tails.forEach(t=>{const sd=t.userData.sd;t.rotation.z=sd*(.42+(w.moving?Math.sin(tt*12+sd)*.14:Math.sin(tt*1.6+sd)*.05)+(hop?.35:0));t.rotation.x=w.moving?Math.sin(tt*6)*.12:0})}
+  function cheer(){const now=performance.now();if(now-hopAt<450)return;hopAt=now;burst({x:g.position.x,y:g.position.y-.5,z:g.position.z})}
+  return{g,hit,update,cheer};
+})();
+
 // letters in the world
 const envMat=new T.MeshLambertMaterial({color:0xfffdf9}),sealMat=new T.MeshLambertMaterial({color:0x8c2f4a,emissive:0x2a0610});
 const envGeo=new T.BoxGeometry(.8,.54,.08),sealGeo=new T.CylinderGeometry(.1,.1,.03,16),flapGeo=new T.BoxGeometry(.8,.025,.08);
@@ -169,7 +220,7 @@ function syncNotes(){const ids=new Set(notes.map(n=>n.id));
 let me="";const isUnread=n=>n.author!==me&&!n.read_at;
 
 let hearts=[];
-function burst(p){for(let i=0;i<14;i++){const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true}));const a=Math.random()*6.28,r=Math.random()*.7,sc=.22+Math.random()*.25;
+function burst(p){for(let i=0;i<14;i++){const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true,depthTest:false}));s.renderOrder=6;const a=Math.random()*6.28,r=Math.random()*.7,sc=.22+Math.random()*.25;
   s.position.set(p.x+Math.cos(a)*r,p.y+1.6+Math.random()*.6,p.z+Math.sin(a)*r);s.scale.set(sc,sc,1);scene.add(s);hearts.push({s,vy:.9+Math.random()*1.2,born:performance.now()+Math.random()*300})}}
 
 // ---------- me: walking with simple block physics ----------
@@ -217,6 +268,7 @@ function pickNote(){const objs=[];noteObjs.forEach(g=>g.children.forEach(c=>{if(
 function pickBlock(){const h=ray.intersectObjects(meshes,false)[0];if(!h||h.instanceId==null)return null;const key=lists[h.object.userData.t][h.instanceId];if(!key)return null;
   const [x,y,z]=key.split(",").map(Number),n=h.face.normal;return{x,y,z,nx:x+Math.round(n.x),ny:y+Math.round(n.y),nz:z+Math.round(n.z)}}
 function tap(cx,cy,alt){aim(cx,cy);const nid=pickNote();if(nid){openLetter(nid);return}
+  const kh=ray.intersectObject(KID.hit,false)[0];if(kh){const bh=mode==="build"?ray.intersectObjects(meshes,false)[0]:null;if(!bh||kh.distance<bh.distance){KID.cheer();if(net&&me)net.sendEmote("kid");buzz();return}}
   if(mode!=="build")return;const p=pickBlock();if(!p)return;
   if(tool==="break"||alt){setBlock(p.x,p.y,p.z,null);buzz();return}
   if(!inBounds(p.nx,p.ny,p.nz)||world.has(K(p.nx,p.ny,p.nz)))return;
@@ -274,7 +326,7 @@ const handlers={
   note(n){if(!notes.some(x=>x.id===n.id)){notes.push(n);syncNotes();if(n.author!==me){toast(n.author+" left you a letter ♡");buzz()}}},
   "note-read"(r){const n=notes.find(x=>x.id===r.id);if(n){n.read_at=r.read_at||new Date().toISOString();syncNotes()}},
   "note-del"(r){notes=notes.filter(x=>x.id!==r.id);syncNotes()},
-  emote(e){const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
+  emote(e){if(e.k==="kid"){KID.cheer();buzz();return}const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
   presence(list){const o=other(me),was=online.has(o);online=new Set(list);
     if(online.has(o)&&!was){toast(o+" just came home ♡");buzz()}
     if(!online.has(o)&&was){seen[o]=new Date().toISOString();people[o].g.visible=false;otherState=null}
@@ -320,7 +372,7 @@ $("nearBtn").onclick=()=>{if(nearId)openLetter(nearId)};
 
 // ---------- loop ----------
 let last=performance.now(),lastSend=0,lastSent="";
-function frame(now){requestAnimationFrame(frame);if(document.hidden)return;
+function frame(){requestAnimationFrame(frame);if(document.hidden)return;const now=performance.now();
   const dt=Math.min(.05,(now-last)/1000);last=now;const tt=now/1000;
   const mine=me&&people[me];
   if(mine){
@@ -348,6 +400,7 @@ function frame(now){requestAnimationFrame(frame);if(document.hidden)return;
   const o=me&&people[other(me)];
   if(o&&otherState&&o.g.visible){const s=otherState,k=Math.min(1,dt*10);s.x+=(s.tx-s.x)*k;s.y+=(s.ty-s.y)*k;s.z+=(s.tz-s.z)*k;let d=s.tyaw-s.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));s.yaw+=d*k;
     o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw}
+  KID.update(dt,tt,now);
   noteObjs.forEach(g=>{const ph=g.userData.phase;g.rotation.y=tt*.8+ph;g.position.y=notes.find(n=>n.id===g.userData.id).y+Math.sin(tt*2+ph)*.08});
   hearts=hearts.filter(h=>{if(now<h.born){h.s.visible=false;return true}h.s.visible=true;const a=(now-h.born)/1000;h.s.position.y+=h.vy*dt;h.s.material.opacity=Math.max(0,1-a/2.2);if(a>2.2){scene.remove(h.s);return false}return true});
   if(!me)bYaw+=dt*.07;
