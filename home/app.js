@@ -134,19 +134,49 @@ function nameTag(name,color){const c=document.createElement("canvas");c.width=19
   g.fillStyle="rgba(255,253,249,.95)";g.fillRect(8,8,176,40);g.strokeStyle="#b8935c";g.lineWidth=1.5;g.strokeRect(12,12,168,32);
   g.fillStyle=color;g.font="italic 500 28px 'Cormorant Garamond',Georgia,serif";g.textAlign="center";g.textBaseline="middle";g.fillText(name,96,29);
   const t=new T.CanvasTexture(c);const s=new T.Sprite(new T.SpriteMaterial({map:t,transparent:true,depthTest:false}));s.scale.set(1.15,.34,1);s.renderOrder=5;return s}
-function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const m=c=>new T.MeshLambertMaterial({color:c}),sk=m(o.skin),sh=m(o.shirt),pa=m(o.pants),ha=m(o.hair);
+function person(o){const g=new T.Group(),body=new T.Group();g.add(body);const gold_=()=>new T.MeshLambertMaterial({color:0xd9b46a,emissive:0x3a2a08});const m=c=>new T.MeshLambertMaterial({color:c}),sk=m(o.skin),sh=m(o.shirt),pa=m(o.pants),ha=m(o.hair);
   const part=(w,h,d,mt,x,y,z,p=body)=>{const b=new T.Mesh(new T.BoxGeometry(w,h,d),mt);b.position.set(x,y,z);b.castShadow=true;p.add(b);return b};
   const limb=(mt,x,y,len,w)=>{const p=new T.Group();p.position.set(x,y,0);body.add(p);part(w,len,w,mt,0,-len/2,0,p);return p};
-  const legL=limb(pa,-.24,.95,.95,.46),legR=limb(pa,.24,.95,.95,.46);part(1.02,1,.52,sh,0,1.45,0);
-  const armL=limb(sh,-.73,1.92,.95,.42),armR=limb(sh,.73,1.92,.95,.42);part(.42,.2,.42,sk,0,-.92,0,armL);part(.42,.2,.42,sk,0,-.92,0,armR);
-  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);
-  x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,17,6,.35,Math.PI-.35);x.stroke();x.fillStyle="rgba(200,100,130,.45)";x.fillRect(5,19,4,2);x.fillRect(23,19,4,2);
+  let legL,legR,armL,armR;
+  if(o.glam){
+    // Anujin: a fitted wine wrap dress with a gold belt, bare arms with a bangle, heels, long glossy hair, lashes and a rose lip
+    const dr=m(0x8c2f4a),dr2=m(0x7a2840),gold=new T.MeshLambertMaterial({color:0xd9b46a,emissive:0x3a2a08}),heel=m(0x3d1424);
+    const leg=sd=>{const p=new T.Group();p.position.set(sd*.19,1.02,0);body.add(p);part(.34,1.02,.34,sk,0,-.51,0,p);part(.38,.12,.5,heel,0,-.98,.04,p);part(.1,.16,.1,heel,0,-.96,-.17,p);part(.36,.05,.36,gold,0,-.84,0,p);return p};
+    legL=leg(-1);legR=leg(1);
+    part(.9,.5,.56,dr,0,.82,0);part(.92,.08,.58,dr2,0,.6,0);
+    part(.74,.3,.44,dr,0,1.2,0);part(.78,.08,.48,gold,0,1.1,0);part(.12,.12,.06,gold,.16,1.1,.25);
+    part(.9,.5,.5,dr,0,1.58,0);part(.04,.42,.02,dr2,-.08,1.6,.26);part(.3,.16,.02,sk,.02,1.76,.255);part(.05,.07,.03,gold,.02,1.66,.27);
+    part(.3,.16,.3,sk,0,1.9,0);
+    const arm=sd=>{const p=new T.Group();p.position.set(sd*.6,1.8,0);body.add(p);part(.3,.9,.3,sk,0,-.45,0,p);part(.34,.07,.34,gold,0,-.7,0,p);return p};
+    armL=arm(-1);armR=arm(1);
+  }else{
+    legL=limb(pa,-.24,.95,.95,.46);legR=limb(pa,.24,.95,.95,.46);part(1.02,1,.52,sh,0,1.45,0);
+    armL=limb(sh,-.73,1.92,.95,.42);armR=limb(sh,.73,1.92,.95,.42);part(.42,.2,.42,sk,0,-.92,0,armL);part(.42,.2,.42,sk,0,-.92,0,armR);
+  }
+  const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");if(!o.glam){x.fillStyle=o.skinCss;x.fillRect(0,0,32,32);x.fillStyle="#2b2026";x.fillRect(9,11,4,6);x.fillRect(19,11,4,6);
+  x.strokeStyle="#2b2026";x.lineWidth=2;x.beginPath();x.arc(16,17,6,.35,Math.PI-.35);x.stroke();x.fillStyle="rgba(200,100,130,.45)";x.fillRect(5,19,4,2);x.fillRect(23,19,4,2);}
+  if(o.glam){x.fillStyle="#f1c9a5";x.fillRect(0,0,32,32);
+    const px_=(c,...r)=>{x.fillStyle=c;for(let i=0;i<r.length;i+=4)x.fillRect(r[i],r[i+1],r[i+2],r[i+3])};
+    px_("#6b4434",8,9,1,1,9,8,3,1,12,9,1,1,19,9,1,1,20,8,3,1,23,9,1,1);
+    px_("#3a2418",9,12,4,5,19,12,4,5);px_("#1a1014",10,13,2,3,20,13,2,3);px_("#fffdf9",10,13,1,1,20,13,1,1,12,15,1,1,22,15,1,1);
+    px_("#1a1014",8,11,6,1,18,11,6,1,7,10,1,1,24,10,1,1);
+    px_("rgba(222,120,150,.5)",5,18,4,2,23,18,4,2);px_("#e2b08f",15,18,2,1);
+    px_("#a8344f",12,21,1,1,19,21,1,1,13,22,6,1);px_("#c9566f",14,23,4,1);
+  }
+
   const ft=new T.CanvasTexture(c);ft.magFilter=T.NearestFilter;
   const head=new T.Mesh(new T.BoxGeometry(.72,.72,.72),[sk,sk,sk,sk,new T.MeshLambertMaterial({map:ft}),sk]);head.position.y=2.32;head.castShadow=true;body.add(head);
-  part(.78,.2,.78,ha,0,2.72,0);if(o.long)part(.78,.95,.2,ha,0,2.25,-.33);else part(.78,.3,.16,ha,0,2.55,-.32);if(o.bow)part(.34,.18,.12,m(0xe9c6cf),.28,2.82,-.28);
+  if(o.glam){
+    part(.8,.18,.8,ha,0,2.74,0);part(.82,1.38,.2,ha,0,2.06,-.35);part(.7,.3,.16,ha,0,1.42,-.33);
+    [-1,1].forEach(sd=>{part(.14,.86,.26,ha,sd*.41,2.2,-.02);part(.14,.4,.22,ha,sd*.43,1.62,.04)});
+    const fr=part(.52,.13,.06,ha,-.12,2.6,.39);fr.rotation.z=.18;part(.26,.1,.06,ha,.22,2.64,.39);
+    part(.06,.12,.06,gold_(),-.42,2.0,.2);part(.06,.12,.06,gold_(),.42,2.0,.2);
+    part(.3,.16,.1,m(0xe9c6cf),.3,2.76,-.26);part(.12,.12,.12,gold_(),.3,2.76,-.26);
+  }else{
+  part(.78,.2,.78,ha,0,2.72,0);if(o.long)part(.78,.95,.2,ha,0,2.25,-.33);else part(.78,.3,.16,ha,0,2.55,-.32);if(o.bow)part(.34,.18,.12,m(0xe9c6cf),.28,2.82,-.28);}
   body.scale.setScalar(.66);const tag=nameTag(o.name,o.tag);tag.position.y=2.2;g.add(tag);scene.add(g);
   return{g,legL,legR,armL,armR}}
-const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0xa8476b,pants:0x3d2a36,hair:0x2b1d18,long:true,bow:true,tag:"#a8476b"},
+const LOOK={Anujin:{name:"Anujin",skin:0xf1c9a5,skinCss:"#f1c9a5",shirt:0x8c2f4a,pants:0x3d2a36,hair:0x24160f,glam:true,tag:"#a8476b"},
   Baji:{name:"Baji",skin:0xe9bf98,skinCss:"#e9bf98",shirt:0x41577a,pants:0x2b2026,hair:0x1c1410,tag:"#41577a"}};
 const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
 Object.values(people).forEach(p=>p.g.visible=false);
