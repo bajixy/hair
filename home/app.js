@@ -3,7 +3,7 @@
    live movement, hearts and new blocks travel over a realtime channel whose name only the word unlocks. */
 (function(){
 "use strict";
-const CONFIG={url:"https://rnagnimphpekwiigxcup.supabase.co",key:""}; // key goes in once the database is set up
+const CONFIG={url:"https://rnagnimphpekwiigxcup.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJuYWduaW1waHBla3dpaWd4Y3VwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MTE3OTAsImV4cCI6MjEwOTI4Nzc5MH0.daqH0Ac-lmNUG44FEEWxfIiMaMotlvN_lEtLavOdCpg"}; // public key: it only reaches the word-checked functions
 const DEMO=new URLSearchParams(location.search).has("demo");
 const $=id=>document.getElementById(id);
 const store={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}},del:k=>{try{localStorage.removeItem(k)}catch(_){}}};
