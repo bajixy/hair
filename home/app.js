@@ -10,7 +10,9 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},s
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const touch=matchMedia("(pointer:coarse)").matches;
-const other=w=>w==="Anujin"?"Baji":"Anujin";
+// Anujin and Baji are a pair (kisses, sword fights, letters); Urii, our little girl, can come home too and just play
+const COUPLE=["Anujin","Baji"],EVERYONE=["Anujin","Baji","Urii"];
+const other=w=>w==="Anujin"?"Baji":w==="Baji"?"Anujin":null;
 const ago=iso=>{if(!iso)return"";const s=(Date.now()-new Date(iso).getTime())/1000;if(s<90)return"just now";const m=s/60;if(m<60)return Math.round(m)+" min ago";const h=m/60;if(h<24)return Math.round(h)+" h ago";const d=h/24;return d<2?"yesterday":Math.round(d)+" days ago"};
 const when=iso=>new Date(iso).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 
@@ -239,7 +241,8 @@ const people={Anujin:person(LOOK.Anujin),Baji:person(LOOK.Baji)};
 Object.values(people).forEach(p=>p.g.visible=false);
 people.Baji.lean=.24;people.Anujin.lean=.13;people.Anujin.lift=.12; // he leans down, she goes up on her toes
 
-// our little girl: twin tails, a purple dress. Her walk is timed by the clock, so she's in the same spot on both phones; tap her for a hop and hearts
+// our little girl, Urii: twin tails, a purple dress. When nobody is playing her, her walk is timed by the clock, so she's in the same spot on every phone;
+// when someone comes home as Urii, she's theirs to walk around. Tap her for a hop and hearts
 const KID=(function(){
   const g=new T.Group(),body=new T.Group();g.add(body);
   const m=c=>new T.MeshLambertMaterial({color:c}),sk=m(0xf3cfae),dress=m(0x8e5aa8),skirt=m(0x7a4794),collar=m(0xfffdf9),tights=m(0xfaf6ef),shoe=m(0x8c2f4a),hair=m(0x2b1d18),bow=m(0xa8476b);
@@ -260,6 +263,7 @@ const KID=(function(){
     part(.26,.5,.26,hair,0,-.3,0,t);part(.2,.22,.2,hair,0,-.62,0,t);t.userData.sd=sd;return t});
   body.scale.setScalar(.6);
   const hit=new T.Mesh(new T.BoxGeometry(1,1.5,1),new T.MeshBasicMaterial({visible:false}));hit.position.y=.75;g.add(hit);
+  const tag=nameTag("Urii","#7a4794");tag.position.y=1.62;tag.scale.multiplyScalar(.85);g.add(tag);
   scene.add(g);
 
   // her loop: [x, z, seconds she stops there]
@@ -271,24 +275,34 @@ const KID=(function(){
     const k=s.stop?0:(u-s.t0)/s.d;return{x:s.a[0]+(s.b[0]-s.a[0])*k,z:s.a[1]+(s.b[1]-s.a[1])*k,moving:!s.stop,yaw:s.stop?null:Math.atan2(s.b[0]-s.a[0],s.b[1]-s.a[1])}}
   function standAt(px_,pz){const cx=Math.round(px_),cz=Math.round(pz);let y=1;while(y<22&&solidAt(cx,y,cz))y++;return y-.5}
   let yaw=Math.PI,ky=.5,hopAt=-1e9,ready=false;
+  const tailSway=(tt,moving,hop)=>tails.forEach(t=>{const sd=t.userData.sd;t.rotation.z=sd*(.42+(moving?Math.sin(tt*12+sd)*.14:Math.sin(tt*1.6+sd)*.05)+(hop?.35:0));t.rotation.x=moving?Math.sin(tt*6)*.12:0});
+  // someone is playing her: on their own phone (me), or on another phone and still here
+  const playing=()=>me==="Urii"||(online.has("Urii")&&!!remote.Urii);
   function update(dt,tt,now){
+    const hopT=(now-hopAt)/1000,hop=hopT<.55?Math.sin(hopT/.55*Math.PI)*.7:0;
+    body.position.y=hop;
+    if(playing()){
+      // where she is and how her legs move is handled like any other person; here just her twin tails and the hop
+      const moving=me==="Urii"?myMoving:!!(remote.Urii&&remote.Urii.moving&&now-remote.Urii.at<600);
+      if(hop){armL.rotation.x=0;armR.rotation.x=0;armL.rotation.z=-2.6;armR.rotation.z=2.6+Math.sin(tt*9)*.4}
+      yaw=g.rotation.y;ready=false;tailSway(tt,moving,hop);return}
     const w=where(Date.now()/1000),gy=standAt(w.x,w.z);
     if(!ready){ky=gy;ready=true}ky+=(gy-ky)*Math.min(1,dt*10);
-    const hopT=(now-hopAt)/1000,hop=hopT<.55?Math.sin(hopT/.55*Math.PI)*.7:0;
-    g.position.set(w.x,ky+hop,w.z);
+    g.position.set(w.x,ky,w.z);
     // she turns to whoever is closest when she stops, and waves at you when you're right by her
     let look=w.yaw,near=null,nd=4.5;
-    Object.values(people).forEach(p=>{if(!p.g.visible)return;const d=Math.hypot(p.g.position.x-w.x,p.g.position.z-w.z);if(d<nd){nd=d;near=p}});
+    Object.values(people).forEach(p=>{if(p===people.Urii||!p.g.visible)return;const d=Math.hypot(p.g.position.x-w.x,p.g.position.z-w.z);if(d<nd){nd=d;near=p}});
     if(look==null)look=near?Math.atan2(near.g.position.x-w.x,near.g.position.z-w.z):yaw;
     let d=look-yaw;d=Math.atan2(Math.sin(d),Math.cos(d));yaw+=d*Math.min(1,dt*6);g.rotation.y=yaw;
     const sw=w.moving?Math.sin(tt*12)*.75:0;legL.rotation.x=sw;legR.rotation.x=-sw;armL.rotation.x=-sw*.8;
     const mine=me&&people[me],close=mine&&mine.g.visible&&Math.hypot(mine.g.position.x-w.x,mine.g.position.z-w.z)<2.6;
     if(close||hop){armR.rotation.x=0;armR.rotation.z=2.6+Math.sin(tt*9)*.4}else{armR.rotation.z=0;armR.rotation.x=sw*.8}
     if(hop){armL.rotation.x=0;armL.rotation.z=-2.6}else armL.rotation.z=0;
-    tails.forEach(t=>{const sd=t.userData.sd;t.rotation.z=sd*(.42+(w.moving?Math.sin(tt*12+sd)*.14:Math.sin(tt*1.6+sd)*.05)+(hop?.35:0));t.rotation.x=w.moving?Math.sin(tt*6)*.12:0})}
+    tailSway(tt,w.moving,hop)}
   function cheer(){const now=performance.now();if(now-hopAt<450)return;hopAt=now;burst({x:g.position.x,y:g.position.y-.5,z:g.position.z})}
-  return{g,hit,update,cheer};
+  return{g,body,legL,legR,armL,armR,hit,update,cheer,playing};
 })();
+people.Urii=KID; // she's always in the house, so she stays visible
 
 // letters in the world
 const envMat=new T.MeshLambertMaterial({color:0xfffdf9}),sealMat=new T.MeshLambertMaterial({color:0x8c2f4a,emissive:0x2a0610});
@@ -305,7 +319,8 @@ function syncNotes(){const ids=new Set(notes.map(n=>n.id));
   noteObjs.forEach((g,id)=>{if(!ids.has(id)){scene.remove(g);noteObjs.delete(id)}});
   notes.forEach(n=>{if(!noteObjs.has(n.id))noteObjs.set(n.id,noteMesh(n));noteObjs.get(n.id).userData.heart.visible=isUnread(n)});
   const u=notes.filter(isUnread).length;$("badge").hidden=!u;$("badge").textContent=u}
-let me="";const isUnread=n=>n.author!==me&&!n.read_at;
+// letters are between Anujin and Baji: when Urii is playing she doesn't see them, open them or mark them read
+let me="";const isUnread=n=>!!other(me)&&n.author!==me&&!n.read_at;
 
 let hearts=[];
 function burst(p){for(let i=0;i<14;i++){const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true,depthTest:false}));s.renderOrder=6;const a=Math.random()*6.28,r=Math.random()*.7,sc=.22+Math.random()*.25;
@@ -317,7 +332,8 @@ const HW=.28,HH=1.7;
 const solidAt=(x,y,z)=>world.has(K(x,y,z));
 function hits(px_,py,pz){const x0=Math.floor(px_-HW+.5),x1=Math.floor(px_+HW+.5-1e-6),y0=Math.floor(py+.5),y1=Math.floor(py+HH+.5-1e-6),z0=Math.floor(pz-HW+.5),z1=Math.floor(pz+HW+.5-1e-6);
   for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(let z=z0;z<=z1;z++)if(solidAt(x,y,z))return true;return false}
-function spawn(){const sx=me==="Anujin"?-.6:.6;Object.assign(P,{x:sx,y:.5,z:6.2,vy:0,yaw:Math.PI});while(hits(P.x,P.y,P.z)&&P.y<30)P.y+=1}
+let myMoving=false;
+function spawn(){const sx=me==="Anujin"?-.6:me==="Baji"?.6:0;Object.assign(P,{x:sx,y:.5,z:6.2,vy:0,yaw:Math.PI});while(hits(P.x,P.y,P.z)&&P.y<30)P.y+=1}
 function moveAxis(ax,d){if(!d)return;P[ax]+=d;if(!hits(P.x,P.y,P.z))return;
   if(P.ground&&!hits(P.x,P.y+1,P.z)){P.y+=1;return} // step up one block
   P[ax]-=d}
@@ -327,6 +343,7 @@ let mode="walk",camYaw=0,camPitch=.42,camDist=8;let bYaw=.55,bPitch=.62,bDist=24
 function setMode(m){mode=m;document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===m;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false")});
   $("walkUI").hidden=m!=="walk";$("buildUI").hidden=m!=="build";$("nearBtn").hidden=true;keys.clear();joy.x=joy.y=0;
   if(m==="build"){bTarget.set(P.x*.5,2.5,P.z*.5);showHint(touch?"Tap to place · drag to turn · pinch to zoom":"Click to place · right-click to break · drag to turn · scroll to zoom")}
+  else if(me==="Urii")showHint(touch?"Joystick to walk · tap Jump · tap the heart":"WASD to walk · space to jump · H for hearts")
   else showHint(touch?"Joystick to walk · drag to look around":"WASD to walk · space to jump · F to swing · H for hearts · K to kiss")}
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 let hintT=null;function showHint(t){const h=$("hint");h.textContent=t;h.classList.remove("gone");clearTimeout(hintT);hintT=setTimeout(()=>h.classList.add("gone"),4500)}
@@ -355,7 +372,7 @@ function aim(cx,cy){const r=cv.getBoundingClientRect();ndc.set((cx-r.left)/r.wid
 function pickNote(){const objs=[];noteObjs.forEach(g=>g.children.forEach(c=>{if(c.userData.noteId)objs.push(c)}));const h=ray.intersectObjects(objs,false)[0];return h?h.object.userData.noteId:null}
 function pickBlock(){const h=ray.intersectObjects(meshes,false)[0];if(!h||h.instanceId==null)return null;const key=lists[h.object.userData.t][h.instanceId];if(!key)return null;
   const [x,y,z]=key.split(",").map(Number),n=h.face.normal;return{x,y,z,nx:x+Math.round(n.x),ny:y+Math.round(n.y),nz:z+Math.round(n.z)}}
-function tap(cx,cy,alt){aim(cx,cy);const nid=pickNote();if(nid){openLetter(nid);return}
+function tap(cx,cy,alt){aim(cx,cy);const nid=other(me)?pickNote():null;if(nid){openLetter(nid);return}
   const kh=ray.intersectObject(KID.hit,false)[0];if(kh){const bh=mode==="build"?ray.intersectObjects(meshes,false)[0]:null;if(!bh||kh.distance<bh.distance){KID.cheer();if(net&&me)net.sendEmote("kid");buzz();return}}
   if(mode!=="build")return;const p=pickBlock();if(!p)return;
   if(tool==="break"||alt){setBlock(p.x,p.y,p.z,null);buzz();return}
@@ -388,7 +405,7 @@ joyEl.addEventListener("pointerup",joyEnd);joyEl.addEventListener("pointercancel
 $("jumpBtn").addEventListener("pointerdown",e=>{e.preventDefault();wantJump=true});
 // ---------- kisses: close together you kiss (both of you lean in), further apart you blow one ----------
 const KISS_NEAR=2.6,KISS_GAP=.95,flyers=[],kissBtn=$("kissBtn");let kiss=null,kissHinted=false;
-function otherPos(){const o=me&&people[other(me)];return o&&o.g.visible&&otherState?{x:otherState.x,y:otherState.y,z:otherState.z}:null}
+function otherPos(){const w=me&&other(me),o=w&&people[w],s=w&&remote[w];return o&&o.g.visible&&s?{x:s.x,y:s.y,z:s.z}:null}
 function blowKiss(from,to){const s=new T.Sprite(new T.SpriteMaterial({map:heartTex,transparent:true,depthTest:false}));s.renderOrder=6;s.scale.set(.42,.42,1);scene.add(s);
   flyers.push({s,from:{x:from.x,y:from.y+1.6,z:from.z},to:{x:to.x,y:to.y+1.6,z:to.z},t0:performance.now(),dur:1300})}
 function beginKiss(at){const M={x:(P.x+at.x)/2,z:(P.z+at.z)/2};let dx=P.x-M.x,dz=P.z-M.z;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
@@ -404,13 +421,19 @@ function pose(p,k){p.body.rotation.x=k?(p.lean||.15)*k.lean:0;p.body.position.y=
 function kissNow(){if(!me||kiss||ko)return;const op=otherPos();if(!op)return;
   if(Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR){beginKiss(op);if(net)net.sendEmote("kiss",{x:+P.x.toFixed(2),z:+P.z.toFixed(2)})}
   else{blowKiss(P,op);if(net)net.sendEmote("blow")}buzz()}
-function onKiss(e){if(e.who===me)return;const op=otherPos();
+function onKiss(e){if(e.who===me)return;
+  if(e.who!==other(me)){ // Urii watching the two of them: hearts where they kiss, or a kiss flying between them
+    const a=people[e.who],b=people[other(e.who)];if(!a||!a.g.visible)return;const pa=a.g.position,pb=b&&b.g.visible?b.g.position:null;
+    if(e.k==="kiss")setTimeout(()=>{const q=pb||pa,mid={x:(pa.x+q.x)/2,y:pa.y,z:(pa.z+q.z)/2};burst(mid);if(Math.hypot(P.x-mid.x,P.z-mid.z)<5)KID.cheer()},850);
+    else if(pb)blowKiss(pa,pb);return}
+  const op=otherPos();
   if(!op){toast(e.who+(e.k==="kiss"?" wants a kiss ♡":" blew you a kiss ♡"));buzz();return}
   if(e.k==="kiss"){if(!kiss)beginKiss({x:e.x??op.x,z:e.z??op.z})}else blowKiss(op,P);buzz()}
 kissBtn.onclick=kissNow;
 // ---------- sword fights: tap the sword to swing; five hearts each; lose them all and you're knocked over for three seconds ----------
 const MAXHP=5,sparks=[],swordBtn=$("swordBtn"),hpBar=$("hpBar");
-let myHp=MAXHP,theirHp=MAXHP,swordOut=false,swingT0=-1e9,theirSwingT0=-1e9,lastFight=-1e9,hurtUntil=0,kb=null,ko=null,theirKO=null,shakeUntil=0,hpKey="";
+// (the other side's swing and knock-over live on their entry in `remote`, so Urii can watch the two of them fight)
+let myHp=MAXHP,theirHp=MAXHP,swordOut=false,swingT0=-1e9,lastFight=-1e9,hurtUntil=0,kb=null,ko=null,shakeUntil=0,hpKey="";
 const starTex=(()=>{const c=document.createElement("canvas");c.width=c.height=32;const g=c.getContext("2d");g.fillStyle="#fff3c4";g.beginPath();
   [[16,1],[19.5,12.5],[31,16],[19.5,19.5],[16,31],[12.5,19.5],[1,16],[12.5,12.5]].forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();g.fillStyle="#fff";g.fillRect(14,14,4,4);return new T.CanvasTexture(c)})();
 function sparkle(p){const now=performance.now();for(let i=0;i<9;i++){const s=new T.Sprite(new T.SpriteMaterial({map:starTex,transparent:true,depthTest:false}));s.renderOrder=7;const sc=.16+Math.random()*.2;s.scale.set(sc,sc,1);
@@ -423,32 +446,36 @@ function addSword(p,hand,guard){const g=new T.Group(),mt=c=>new T.MeshLambertMat
 addSword(people.Anujin,.9,0xa8476b);addSword(people.Baji,1.13,0x41577a);
 function flash(p){const ms=[];p.g.traverse(o=>{if(o.isMesh&&o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m.emissive){if(m.userData.e0==null)m.userData.e0=m.emissive.getHex();ms.push(m);m.emissive.setHex(0x8a1020)}})});
   setTimeout(()=>ms.forEach(m=>m.emissive.setHex(m.userData.e0)),170)}
-function swing(){if(!me||ko||kiss)return;const now=performance.now();if(now-swingT0<450)return;swordOut=true;swingT0=now;lastFight=now;
-  const op=otherPos();let hit=false,dx=0,dz=0;
-  if(op&&!theirKO){const d=Math.hypot(op.x-P.x,op.z-P.z);if(d<3.2&&d>.01){dx=(op.x-P.x)/d;dz=(op.z-P.z)/d;let a=Math.atan2(dx,dz)-P.yaw;a=Math.atan2(Math.sin(a),Math.cos(a));
+function swing(){if(!me||!other(me)||ko||kiss)return;const now=performance.now();if(now-swingT0<450)return;swordOut=true;swingT0=now;lastFight=now;
+  const op=otherPos(),ps=remote[other(me)];let hit=false,dx=0,dz=0;
+  if(op&&!(ps&&ps.ko)){const d=Math.hypot(op.x-P.x,op.z-P.z);if(d<3.2&&d>.01){dx=(op.x-P.x)/d;dz=(op.z-P.z)/d;let a=Math.atan2(dx,dz)-P.yaw;a=Math.atan2(Math.sin(a),Math.cos(a));
     if(Math.abs(a)<1.65){P.yaw+=a;const l=Math.max(0,Math.min(.8,d-1.1));moveAxis("x",dx*l);moveAxis("z",dz*l);hit=Math.hypot(op.x-P.x,op.z-P.z)<2.4}}}
   if(hit)setTimeout(()=>{const o=people[other(me)];flash(o);sparkle(o.g.position)},120);
   if(net)net.sendEmote("swing",hit?{hit:1,dx:+dx.toFixed(3),dz:+dz.toFixed(3)}:{});buzz()}
-function onFight(e){if(e.who===me)return;const now=performance.now(),o=people[other(me)];lastFight=now;
-  if(e.k==="swing"){theirSwingT0=now;if(otherState)otherState.sword=true;
+function onFight(e){if(e.who===me)return;const now=performance.now(),s=remote[e.who];
+  if(s){if(e.k==="swing"){s.swingT0=now;s.sword=true}else if(e.k==="hp")s.ko=e.ko?{t0:now}:null}
+  if(e.who!==other(me))return; // only your other half can hit you; Urii just watches
+  const o=people[e.who];lastFight=now;
+  if(e.k==="swing"){
     if(e.hit&&!ko&&now>hurtUntil){myHp=Math.max(0,myHp-1);hurtUntil=now+450;setTimeout(()=>{flash(people[me]);sparkle(P)},120);kb={dx:e.dx||0,dz:e.dz||0,t0:now+120};shakeUntil=now+320;
       if(navigator.vibrate)try{navigator.vibrate(myHp?40:[60,40,120])}catch(_){}
       if(myHp<=0){ko={t0:now+150};swordOut=false;setTimeout(()=>toast(other(me)+" wins this round ♡"),350)}
       if(net)net.sendEmote("hp",{hp:myHp,ko:myHp<=0?1:0})}}
-  else if(e.k==="hp"){theirHp=e.hp;if(e.ko){theirKO={t0:now};setTimeout(()=>{toast("You win this round ♡");burst(o.g.position)},350)}else theirKO=null}}
+  else if(e.k==="hp"){theirHp=e.hp;if(e.ko)setTimeout(()=>{toast("You win this round ♡");burst(o.g.position)},350)}}
 function fightTick(now,dt){
   if(ko&&now-ko.t0>3000){ko=null;myHp=MAXHP;hurtUntil=now+1500;if(net)net.sendEmote("hp",{hp:myHp,ko:0})}
-  if(theirKO&&now-theirKO.t0>4500)theirKO=null;
+  for(const w in remote){const s=remote[w];if(s.ko&&now-s.ko.t0>4500)s.ko=null}
   if(swordOut&&now-swingT0>20000)swordOut=false;
   if(now-lastFight>20000&&!ko){if(myHp<MAXHP){myHp=MAXHP;if(net)net.sendEmote("hp",{hp:myHp,ko:0})}theirHp=MAXHP}
   const show=!!me&&mode==="walk"&&(now-lastFight<20000||myHp<MAXHP);if(hpBar.hidden===show)hpBar.hidden=!show;
   if(show){const h=n=>"♥".repeat(n)+"♡".repeat(MAXHP-n),k=myHp+"|"+theirHp;if(k!==hpKey){hpKey=k;hpBar.innerHTML=`<span><b>You</b>${h(myHp)}</span><span><b>${esc(other(me))}</b>${h(theirHp)}</span>`}}
   for(let i=sparks.length-1;i>=0;i--){const s=sparks[i],a=(now-s.born)/1000;if(a>.6){scene.remove(s.s);sparks.splice(i,1);continue}
     s.s.position.x+=s.vx*dt;s.s.position.y+=s.vy*dt;s.s.position.z+=s.vz*dt;s.vy-=6*dt;s.s.material.opacity=1-a/.6}}
-function fightPose(p,isMe,now){const out=isMe?(swordOut&&!ko):(!!(otherState&&otherState.sword)&&!theirKO);p.sword.visible=out;
-  if(out&&!(kiss&&kissPose(now))){const u=(now-(isMe?swingT0:theirSwingT0))/340;let th=-.55;
+function fightPose(p,isMe,now,s){if(!p.sword)return; // Urii has no sword
+  const out=isMe?(swordOut&&!ko):(!!(s&&s.sword)&&!(s&&s.ko));p.sword.visible=out;
+  if(out&&!(kiss&&kissPose(now))){const u=(now-(isMe?swingT0:(s.swingT0||-1e9)))/340;let th=-.55;
     if(u>=0&&u<1)th=u<.3?-.55-2.05*(u/.3):-2.6+2.35*Math.pow((u-.3)/.7,.6);p.armR.rotation.x=th;p.armR.rotation.z=0}
-  const k=isMe?ko:theirKO,t=k?Math.max(0,Math.min(1,(now-k.t0)/350)):0,e=t*t*(3-2*t);p.body.rotation.z=-1.5*e;if(k)p.body.rotation.x=0}
+  const k=isMe?ko:(s&&s.ko),t=k?Math.max(0,Math.min(1,(now-k.t0)/350)):0,e=t*t*(3-2*t);p.body.rotation.z=-1.5*e;if(k)p.body.rotation.x=0}
 swordBtn.addEventListener("pointerdown",e=>{e.preventDefault();swing()});
 let lastHeart=0;function hearts_(){const now=performance.now();if(now-lastHeart<700)return;lastHeart=now;burst(P);if(net)net.sendEmote("hearts");buzz()}
 $("heartBtn").onclick=hearts_;
@@ -468,22 +495,29 @@ cv.addEventListener("wheel",e=>{e.preventDefault();const f=1+Math.sign(e.deltaY)
 let lastLook=0;
 
 // ---------- the other person, live ----------
-let online=new Set(),seen={},otherState=null,connected=false;
+// remote: everyone else who's home right now, by name — where they're headed, sword out, knocked over
+let online=new Set(),seen={},remote={},connected=false;
 function chip(){const o=other(me),c=$("chip"),t=$("chipText");c.classList.remove("on","off","lost");
   if(!connected){c.classList.add("lost");t.textContent="Reconnecting…";return}
-  if(online.has(o)){c.classList.add("on");t.textContent=o+" is here ♡"}else{c.classList.add("off");t.textContent=seen[o]?o+" was here "+ago(seen[o]):o+" hasn't been home yet"}}
+  if(!o){const here=COUPLE.filter(w=>online.has(w));
+    if(here.length){c.classList.add("on");t.textContent=(here.length>1?"Anujin & Baji are":here[0]+" is")+" here ♡"}else{c.classList.add("off");t.textContent="Just you for now, Urii ♡"}return}
+  const kid=online.has("Urii");
+  if(online.has(o)){c.classList.add("on");t.textContent=o+(kid?" & Urii are":" is")+" here ♡"}
+  else if(kid){c.classList.add("on");t.textContent="Urii is here ♡"}
+  else{c.classList.add("off");t.textContent=seen[o]?o+" was here "+ago(seen[o]):o+" hasn't been home yet"}}
 setInterval(()=>{if(me)chip()},30000);
 let toastT=null;function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3600)}
 const handlers={
-  pos(p){if(p.who!==other(me))return;otherState=Object.assign(otherState||{x:p.x,y:p.y,z:p.z,yaw:p.yaw},{tx:p.x,ty:p.y,tz:p.z,tyaw:p.yaw,moving:p.m,sword:!!p.sw,at:performance.now()});people[p.who].g.visible=true},
+  pos(p){if(!p||p.who===me||!people[p.who])return;remote[p.who]=Object.assign(remote[p.who]||{x:p.x,y:p.y,z:p.z,yaw:p.yaw},{tx:p.x,ty:p.y,tz:p.z,tyaw:p.yaw,moving:p.m,sword:!!p.sw,at:performance.now()});people[p.who].g.visible=true},
   block(b){const k=K(b.x,b.y,b.z);if(b.t==null)world.delete(k);else world.set(k,b.t);rebuild();if(hits(P.x,P.y,P.z))P.y+=1},
-  note(n){if(!notes.some(x=>x.id===n.id)){notes.push(n);syncNotes();if(n.author!==me){toast(n.author+" left you a letter ♡");buzz()}}},
+  note(n){if(!other(me))return;if(!notes.some(x=>x.id===n.id)){notes.push(n);syncNotes();if(n.author!==me){toast(n.author+" left you a letter ♡");buzz()}}},
   "note-read"(r){const n=notes.find(x=>x.id===r.id);if(n){n.read_at=r.read_at||new Date().toISOString();syncNotes()}},
   "note-del"(r){notes=notes.filter(x=>x.id!==r.id);syncNotes()},
   emote(e){if(e.k==="kid"){KID.cheer();buzz();return}if(e.k==="kiss"||e.k==="blow"){onKiss(e);return}if(e.k==="swing"||e.k==="hp"){onFight(e);return}const p=people[e.who];if(p&&p.g.visible)burst(p.g.position);else if(e.who!==me)toast(e.who+" sent you hearts ♡");buzz()},
-  presence(list){const o=other(me),was=online.has(o);online=new Set(list);
-    if(online.has(o)&&!was){toast(o+" just came home ♡");buzz()}
-    if(!online.has(o)&&was){seen[o]=new Date().toISOString();people[o].g.visible=false;otherState=null}
+  presence(list){const was=online;online=new Set(list);
+    EVERYONE.forEach(w=>{if(w===me)return;
+      if(online.has(w)&&!was.has(w)){toast(w+" just came home ♡");buzz()}
+      if(!online.has(w)&&was.has(w)){seen[w]=new Date().toISOString();delete remote[w];if(w!=="Urii")people[w].g.visible=false}}); // Urii goes back to her own little walk
     chip()},
   status(st){const was=connected;connected=st==="SUBSCRIBED";chip();if(connected&&!was&&wasEverConnected)resync();if(connected)wasEverConnected=true}
 };
@@ -496,7 +530,14 @@ function openSheet(html){paper.innerHTML=`<button class="x" type="button" aria-l
 function closeSheet(){sheet.hidden=true;paper.innerHTML="";cv.focus({preventScroll:true})}
 sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet()});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!sheet.hidden)closeSheet()});
-$("lettersBtn").onclick=()=>{const list=[...notes].sort((a,b)=>b.created_at<a.created_at?-1:1);
+function switchWho(){store.del("home-secret");store.del("home-who");location.reload()}
+$("lettersBtn").onclick=()=>{
+  if(!other(me)){openSheet(`<div class="caps">Hello</div><h2>Hi <em>Urii</em> ♡</h2>
+    <p class="letter-body">Walk around the house, jump, send hearts, and build anything you like.</p>
+    <div class="btns"><button class="btn solid" type="button" id="close2">Let's play</button></div>
+    <div class="btns"><button class="linkish" type="button" id="notMe">Not Urii? Switch</button></div>`);
+    $("close2").onclick=closeSheet;$("notMe").onclick=switchWho;return}
+  const list=[...notes].sort((a,b)=>b.created_at<a.created_at?-1:1);
   openSheet(`<div class="caps">Between us</div><h2>Our <em>letters</em></h2>
     ${list.length?`<ul class="list">${list.map(n=>`<li class="${isUnread(n)?"unread":""}"><button type="button" data-id="${esc(n.id)}"><span class="dot"></span><span class="meta">${n.author===me?"You wrote":"From "+esc(n.author)} · ${esc(ago(n.created_at))}${n.author===me?(n.read_at?" · read ♡":" · not opened yet"):""}</span><span class="pv">${esc(n.body.split("\n")[0])}</span></button></li>`).join("")}</ul>`
       :`<p class="empty">No letters yet. Leave the first one somewhere in the house for ${esc(other(me))} to find.</p>`}
@@ -505,7 +546,7 @@ $("lettersBtn").onclick=()=>{const list=[...notes].sort((a,b)=>b.created_at<a.cr
   paper.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>openLetter(b.dataset.id));
   $("writeHere").onclick=()=>{const fx=Math.round(P.x-Math.sin(P.yaw)*1.2),fz=Math.round(P.z-Math.cos(P.yaw)*1.2);let fy=Math.round(P.y+.5);
     let spot={x:fx,y:fy,z:fz};if(world.has(K(fx,fy,fz))||!inBounds(fx,fy,fz))spot={x:Math.round(P.x),y:Math.round(P.y+.5)+1,z:Math.round(P.z)};compose(spot)};
-  $("notMe").onclick=()=>{store.del("home-secret");store.del("home-who");location.reload()}};
+  $("notMe").onclick=switchWho};
 function compose(spot){openSheet(`<div class="caps">For ${esc(other(me))}</div><h2>Leave a <em>letter</em></h2>
   <textarea id="body" maxlength="1000" placeholder="Write something for ${esc(other(me))} to find…" aria-label="Your letter"></textarea>
   <div class="btns"><button class="btn solid" type="button" id="send">Leave it here</button><button class="btn" type="button" id="cancel">Not now</button><span class="status" id="st"></span></div>`);
@@ -514,7 +555,7 @@ function compose(spot){openSheet(`<div class="caps">For ${esc(other(me))}</div><
     $("send").disabled=true;$("st").textContent="Leaving it…";
     try{const n=await net.addNote(spot.x,spot.y,spot.z,body);if(!notes.some(x=>x.id===n.id))notes.push(n);syncNotes();closeSheet();toast("Your letter is waiting for "+other(me)+" ♡")}
     catch(_){$("st").textContent="It didn't send. Check your connection and try again.";$("send").disabled=false}}}
-async function openLetter(id){const n=notes.find(x=>x.id===id);if(!n)return;const mine=n.author===me;
+async function openLetter(id){const n=notes.find(x=>x.id===id);if(!n||!other(me))return;const mine=n.author===me;
   openSheet(`<div class="caps">${mine?"You wrote this":"From "+esc(n.author)} · ${esc(when(n.created_at))}</div>
     <p class="letter-body">${esc(n.body)}</p><div class="sig">${esc(n.author)}</div>
     <div class="btns">${mine?`<span class="status">${n.read_at?esc(other(me))+" read it "+esc(ago(n.read_at))+" ♡":"Not opened yet"}</span><button class="btn warn" type="button" id="del">Take it back</button>`:`<button class="btn" type="button" id="close2">Close</button>`}</div>`);
@@ -547,7 +588,7 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
     if(P.y<-12)spawn();
     Object.assign(P,{x:Math.max(-13,Math.min(13,P.x)),z:Math.max(-13,Math.min(13,P.z))});
     mine.g.position.set(P.x,P.y,P.z);mine.g.rotation.y=P.yaw;mine.g.visible=true;
-    const sw=moving?Math.sin(tt*10)*.7:0;mine.legL.rotation.x=sw;mine.legR.rotation.x=-sw;mine.armL.rotation.x=-sw;mine.armR.rotation.x=sw;
+    myMoving=moving;const sw=moving?Math.sin(tt*10)*.7:0;mine.legL.rotation.x=sw;mine.legR.rotation.x=-sw;mine.armL.rotation.x=-sw;mine.armR.rotation.x=sw;
     pose(mine,kissPose(now));fightPose(mine,true,now);
     if(net&&connected&&now-lastSend>110){const key=[P.x.toFixed(2),P.y.toFixed(2),P.z.toFixed(2),P.yaw.toFixed(2),moving?1:0,swordOut?1:0].join();
       if(key!==lastSent||now-lastSend>2500){net.sendPos({who:me,x:+P.x.toFixed(2),y:+P.y.toFixed(2),z:+P.z.toFixed(2),yaw:+P.yaw.toFixed(2),m:moving?1:0,sw:swordOut&&!ko?1:0});lastSent=key;lastSend=now}}
@@ -555,9 +596,11 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
     let best=null,bd=2.6;notes.forEach(n=>{if(!isUnread(n))return;const d=Math.hypot(n.x-P.x,n.y-(P.y+.6),n.z-P.z);if(d<bd){bd=d;best=n.id}});
     if(best!==nearId){nearId=best;$("nearBtn").hidden=!(best&&mode==="walk")}
   }
-  const o=me&&people[other(me)];
-  if(o&&otherState&&o.g.visible){const s=otherState,k=Math.min(1,dt*10);s.x+=(s.tx-s.x)*k;s.y+=(s.ty-s.y)*k;s.z+=(s.tz-s.z)*k;let d=s.tyaw-s.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));s.yaw+=d*k;
-    o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw;pose(o,kissPose(now));fightPose(o,false,now)}
+  // everyone else who's home (Urii only once she's really here; until then she walks her own loop)
+  if(me)for(const w in remote){const s=remote[w],o=people[w];if(!o||!o.g.visible||(w==="Urii"&&!online.has(w)))continue;
+    const k=Math.min(1,dt*10);s.x+=(s.tx-s.x)*k;s.y+=(s.ty-s.y)*k;s.z+=(s.tz-s.z)*k;let d=s.tyaw-s.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));s.yaw+=d*k;
+    o.g.position.set(s.x,s.y,s.z);o.g.rotation.y=s.yaw;const sw=s.moving&&now-s.at<600?Math.sin(tt*10)*.7:0;o.legL.rotation.x=sw;o.legR.rotation.x=-sw;o.armL.rotation.x=-sw;o.armR.rotation.x=sw;
+    pose(o,w===other(me)?kissPose(now):null);fightPose(o,false,now,s)}
   if(me){const op=otherPos(),show=!!op;if(kissBtn.hidden===show)kissBtn.hidden=!show;
     if(op){const near=Math.hypot(op.x-P.x,op.z-P.z)<KISS_NEAR;if(kissBtn.classList.contains("close")!==near){kissBtn.classList.toggle("close",near);kissBtn.setAttribute("aria-label",near?"Kiss "+other(me):"Blow "+other(me)+" a kiss");
       if(near&&!kissHinted&&mode==="walk"){kissHinted=true;toast("Close enough for a kiss ♡")}}}}
@@ -568,7 +611,7 @@ function frame(){requestAnimationFrame(frame);if(document.hidden)return;const no
   noteObjs.forEach(g=>{const ph=g.userData.phase;g.rotation.y=tt*.8+ph;g.position.y=notes.find(n=>n.id===g.userData.id).y+Math.sin(tt*2+ph)*.08});
   hearts=hearts.filter(h=>{if(now<h.born){h.s.visible=false;return true}h.s.visible=true;const a=(now-h.born)/1000;h.s.position.y+=h.vy*dt;h.s.material.opacity=Math.max(0,1-a/2.2);if(a>2.2){scene.remove(h.s);return false}return true});
   if(!me)bYaw+=dt*.07;
-  if(mode==="walk"&&me){const ty=P.y+1.4,cp=camPitch;camera.position.set(P.x+Math.sin(camYaw)*Math.cos(cp)*camDist,ty+Math.sin(cp)*camDist,P.z+Math.cos(camYaw)*Math.cos(cp)*camDist);camera.lookAt(P.x,ty,P.z);if(now<shakeUntil){camera.position.x+=(Math.random()-.5)*.22;camera.position.y+=(Math.random()-.5)*.16}}
+  if(mode==="walk"&&me){const ty=P.y+(me==="Urii"?1:1.4),cp=camPitch;camera.position.set(P.x+Math.sin(camYaw)*Math.cos(cp)*camDist,ty+Math.sin(cp)*camDist,P.z+Math.cos(camYaw)*Math.cos(cp)*camDist);camera.lookAt(P.x,ty,P.z);if(now<shakeUntil){camera.position.x+=(Math.random()-.5)*.22;camera.position.y+=(Math.random()-.5)*.16}}
   else{camera.position.set(bTarget.x+Math.sin(bYaw)*Math.cos(bPitch)*bDist,bTarget.y+Math.sin(bPitch)*bDist,bTarget.z+Math.cos(bYaw)*Math.cos(bPitch)*bDist);camera.lookAt(bTarget)}
   renderer.render(scene,camera)}
 function size(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(w<520)bDist=Math.max(bDist,30)}
@@ -577,9 +620,12 @@ addEventListener("resize",size);size();
 // ---------- coming in ----------
 let secret="";
 function applyData(d){world=new Map();(d.blocks||[]).forEach(([x,y,z,t])=>{if(B[t])world.set(K(x,y,z),t)});rebuild();
-  notes=d.notes||[];syncNotes();seen=d.seen||{};chip()}
+  notes=other(me)?d.notes||[]:[];syncNotes();seen=d.seen||{};chip()}
 async function enter(word,who){
   const d=await net.enter(word,who);secret=word;me=who;
+  if(!other(me)){ // Urii: no sword, no letters, a little house button to say hi (and switch) instead
+    swordBtn.hidden=true;bar.querySelector(".slot.letter").hidden=true;$("lettersBtn").setAttribute("aria-label","Hello");
+    $("lettersBtn").innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 17.6s-2.6-1.6-2.6-3.4a1.4 1.4 0 0 1 2.6-.8 1.4 1.4 0 0 1 2.6.8c0 1.8-2.6 3.4-2.6 3.4z" fill="currentColor" stroke="none"/></svg><b class="badge" id="badge" hidden>0</b>`}
   if(!d.blocks||!d.blocks.length){const st=[...starter()].map(([k,t])=>[...k.split(",").map(Number),t]);try{await net.seed(st)}catch(_){}d.blocks=st}
   applyData(d);spawn();camYaw=0;
   net.live(d.channel,handlers);net.touch();setInterval(()=>net.touch(),60000);

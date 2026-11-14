@@ -146,7 +146,7 @@ textarea:focus{border-color:var(--wine)}
 .card h1{font-family:var(--f-serif);font-weight:300;font-size:2.8rem;line-height:1;margin:12px 0 8px}
 .card h1 em{font-style:italic;background:linear-gradient(105deg,#a67c45 0%,#e8d3a0 30%,#b88b4f 55%,#e2c992 85%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .card p{font-style:italic;color:var(--ink2);margin:0 0 18px;font-size:1.1rem}
-.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 18px}
+.pick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:6px 0 18px}
 .pick button{border:1px solid var(--edge);background:transparent;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;transition:border-color .25s,background .25s}
 .pick button b{font-weight:400;font-size:1.3rem}
 .pick button .sw{width:18px;height:18px;border-radius:3px}
@@ -203,6 +203,7 @@ textarea:focus{border-color:var(--wine)}
     <div class="pick" id="pick" role="radiogroup" aria-label="Who are you">
       <button type="button" role="radio" aria-checked="false" data-who="Anujin"><span class="sw" style="background:#a8476b"></span><b>Anujin</b></button>
       <button type="button" role="radio" aria-checked="false" data-who="Baji"><span class="sw" style="background:#41577a"></span><b>Baji</b></button>
+      <button type="button" role="radio" aria-checked="false" data-who="Urii"><span class="sw" style="background:#8e5aa8"></span><b>Urii</b></button>
     </div>
     <label class="caps" for="word">Our secret word</label>
     <input class="word" id="word" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required>

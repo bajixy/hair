@@ -22,7 +22,7 @@ create table if not exists public.home_notes(
   read_at timestamptz
 );
 create table if not exists public.home_seen(
-  who text primary key check (who in ('Anujin','Baji')),
+  who text primary key check (who in ('Anujin','Baji','Urii')),
   at timestamptz not null default now()
 );
 alter table public.home_config enable row level security;
@@ -34,7 +34,7 @@ revoke all on public.home_config, public.home_blocks, public.home_notes, public.
 create or replace function public.home_check(p_secret text, p_who text) returns void
 language plpgsql security definer set search_path = public, extensions as $$
 begin
-  if p_who is null or p_who not in ('Anujin','Baji') then raise exception 'unknown person'; end if;
+  if p_who is null or p_who not in ('Anujin','Baji','Urii') then raise exception 'unknown person'; end if;
   if p_secret is null or not exists (select 1 from home_config where secret_hash = crypt(p_secret, secret_hash)) then
     raise exception 'wrong secret word';
   end if;
@@ -49,7 +49,7 @@ begin
   return jsonb_build_object(
     'channel', (select channel from home_config where id = 1),
     'blocks',  coalesce((select jsonb_agg(jsonb_build_array(x, y, z, t)) from home_blocks), '[]'::jsonb),
-    'notes',   coalesce((select jsonb_agg(to_jsonb(n) order by n.created_at) from home_notes n), '[]'::jsonb),
+    'notes',   case when p_who in ('Anujin','Baji') then coalesce((select jsonb_agg(to_jsonb(n) order by n.created_at) from home_notes n), '[]'::jsonb) else '[]'::jsonb end,
     'seen',    coalesce((select jsonb_object_agg(who, at) from home_seen), '{}'::jsonb));
 end $$;
 
@@ -97,6 +97,7 @@ language plpgsql security definer set search_path = public, extensions as $$
 declare r jsonb;
 begin
   perform home_check(p_secret, p_who);
+  if p_who not in ('Anujin','Baji') then return null; end if; -- letters are just between the two of us
   update home_notes set read_at = coalesce(read_at, now()) where id = p_id and author <> p_who;
   select to_jsonb(n) into r from home_notes n where id = p_id;
   return r;
