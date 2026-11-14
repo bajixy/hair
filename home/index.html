@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Our home</title>
 <meta name="description" content="The little home we're building together.">
 <meta name="theme-color" content="#1a1016">
@@ -38,7 +38,7 @@
 html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:var(--velvet)}
 body{color:var(--ink);font:400 17px/1.5 var(--f-serif);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 button,input,textarea{font:inherit;color:inherit}
-button{-webkit-user-select:none;user-select:none;cursor:pointer}
+button{-webkit-user-select:none;user-select:none;cursor:pointer;touch-action:manipulation}
 [hidden]{display:none!important}
 :focus-visible{outline:1px solid var(--gold);outline-offset:3px}
 .caps{font-family:var(--f-sans);font-weight:400;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-d)}
@@ -215,6 +215,6 @@ textarea:focus{border-color:var(--wine)}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

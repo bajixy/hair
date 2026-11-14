@@ -490,7 +490,14 @@ cv.addEventListener("pointermove",e=>{const p=pts.get(e.pointerId);if(!p)return;
     else{bYaw-=dx*.008;bPitch=Math.max(.12,Math.min(1.45,bPitch+dy*.006))}}
   else if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch){if(mode==="walk")camDist=Math.max(3,Math.min(14,camDist*pinch/d));else bDist=Math.max(8,Math.min(46,bDist*pinch/d))}pinch=d}});
 const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(pts.size===0&&!moved&&e.type==="pointerup"&&performance.now()-downT<600)tap(e.clientX,e.clientY,e.button===2);if(pts.size<2)pinch=0};
-cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);cv.addEventListener("lostpointercapture",up);
+// phones: never zoom the page itself. iPhones ignore the viewport's no-zoom, so stop pinch gestures and quick double taps here
+// (pinching the house still zooms the camera, that's handled on the canvas above)
+["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+let lastTouchEnd=0;
+document.addEventListener("touchend",e=>{const now=Date.now();if(now-lastTouchEnd<350&&!e.target.closest("input,textarea")){e.preventDefault();const b=e.target.closest("button");if(b&&!b.disabled)b.click()}lastTouchEnd=now},{passive:false});
+document.addEventListener("touchmove",e=>{if(e.touches.length>1&&!e.target.closest("#cv"))e.preventDefault()},{passive:false});
+document.addEventListener("dblclick",e=>e.preventDefault(),{passive:false});
 cv.addEventListener("wheel",e=>{e.preventDefault();const f=1+Math.sign(e.deltaY)*.08;if(mode==="walk")camDist=Math.max(3,Math.min(14,camDist*f));else bDist=Math.max(8,Math.min(46,bDist*f))},{passive:false});
 let lastLook=0;
 
